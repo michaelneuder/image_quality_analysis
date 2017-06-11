@@ -53,12 +53,19 @@ def main():
     y = tf.placeholder(tf.float32, [None, 96, 96, 1])
 
     # data
-    original_images_train = np.loadtxt("data/orig_train.txt")
-    reconstructed_images_train = np.loadtxt("data/recon_train.txt")
-    comparison_images_train = np.loadtxt("data/comp_train.txt")
-    original_images_test = np.loadtxt("data/orig_test.txt")
-    reconstructed_images_test = np.loadtxt("data/recon_test.txt")
-    comparison_images_test = np.loadtxt("data/comp_test.txt")
+    # original_images_train = np.loadtxt("data/orig_train.txt")
+    # reconstructed_images_train = np.loadtxt("data/recon_train.txt")
+    # comparison_images_train = np.loadtxt("data/comp_train.txt")
+    # original_images_test = np.loadtxt("data/orig_test.txt")
+    # reconstructed_images_test = np.loadtxt("data/recon_test.txt")
+    # comparison_images_test = np.loadtxt("data/comp_test.txt")
+    original_images_train = np.loadtxt('../../data/sample_data/orig_3pics.txt')
+    reconstructed_images_train = np.loadtxt('../../data/sample_data/recon_3pics.txt')
+    comparison_images_train = np.loadtxt('../../data/sample_data/comp_3pics.txt')
+    original_images_test = np.loadtxt('../../data/sample_data/orig_3pics.txt')
+    reconstructed_images_test = np.loadtxt('../../data/sample_data/recon_3pics.txt')
+    comparison_images_test = np.loadtxt('../../data/sample_data/comp_3pics.txt')
+
 
     # get size of training and testing set
     train_size = original_images_train.shape[0]
