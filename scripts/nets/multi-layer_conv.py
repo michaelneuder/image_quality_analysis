@@ -24,23 +24,27 @@ def conv_net(x, weights, biases):
     output = convolve_ouput_layer(conv3, weights['weights_out'], biases['bias_out'])
     return output
 
+def get_batch(x, y):
+    batch_indices = np.arange(x.shape[0])
+    np.random.shuffle(batch_indices)
+    x_batch = []
+    y_batch = []
+    for i in batch_indices[:50]:
+        x_batch.append(x[i])
+        y_batch.append(y[i])
+    return [x_batch, y_batch]
+
 def main():
-    '''
-    weights: 5x5 filters. first layer has two channels for original image
-    and reconstructed image. first output is ten filters. second layer takes
-    10 output from layer one and outputs 20. third layer takes 20 outputs 30.
-    output layer takes those 30 and outputs a single 96,96 image.
-    '''
     weights = {
-        'weights1': tf.Variable(tf.random_normal([5,5,2,10])),
-        'weights2': tf.Variable(tf.random_normal([5,5,10,20])),
-        'weights3': tf.Variable(tf.random_normal([5,5,20,30])),
-        'weights_out': tf.Variable(tf.random_normal([5,5,30,1]))
+        'weights1': tf.Variable(tf.random_normal([11,11,2,30])),
+        'weights2': tf.Variable(tf.random_normal([11,11,30,20])),
+        'weights3': tf.Variable(tf.random_normal([11,11,20,10])),
+        'weights_out': tf.Variable(tf.random_normal([11,11,10,1]))
     }
     biases = {
-        'bias1': tf.Variable(tf.random_normal([10])),
+        'bias1': tf.Variable(tf.random_normal([30])),
         'bias2': tf.Variable(tf.random_normal([20])),
-        'bias3': tf.Variable(tf.random_normal([30])),
+        'bias3': tf.Variable(tf.random_normal([10])),
         'bias_out': tf.Variable(tf.random_normal([1]))
     }
 
@@ -53,19 +57,12 @@ def main():
     y = tf.placeholder(tf.float32, [None, 96, 96, 1])
 
     # data
-    # original_images_train = np.loadtxt("data/orig_train.txt")
-    # reconstructed_images_train = np.loadtxt("data/recon_train.txt")
-    # comparison_images_train = np.loadtxt("data/comp_train.txt")
-    # original_images_test = np.loadtxt("data/orig_test.txt")
-    # reconstructed_images_test = np.loadtxt("data/recon_test.txt")
-    # comparison_images_test = np.loadtxt("data/comp_test.txt")
-    original_images_train = np.loadtxt('../../data/sample_data/orig_3pics.txt')
-    reconstructed_images_train = np.loadtxt('../../data/sample_data/recon_3pics.txt')
-    comparison_images_train = np.loadtxt('../../data/sample_data/comp_3pics.txt')
-    original_images_test = np.loadtxt('../../data/sample_data/orig_3pics.txt')
-    reconstructed_images_test = np.loadtxt('../../data/sample_data/recon_3pics.txt')
-    comparison_images_test = np.loadtxt('../../data/sample_data/comp_3pics.txt')
-
+    original_images_train = np.loadtxt('../../data/sample_data/orig_500.txt')
+    reconstructed_images_train = np.loadtxt('../../data/sample_data/recon_500.txt')
+    comparison_images_train = np.loadtxt('../../data/sample_data/comp_500.txt')
+    original_images_test = np.loadtxt('../../data/sample_data/orig_140.txt')
+    reconstructed_images_test = np.loadtxt('../../data/sample_data/recon_140.txt')
+    comparison_images_test = np.loadtxt('../../data/sample_data/comp_140.txt')
 
     # get size of training and testing set
     train_size = original_images_train.shape[0]
@@ -103,9 +100,9 @@ def main():
     with tf.Session() as sess:
         sess.run(init)
         step = 1
-        while step < 10:
-            start_index, end_index = step, step+5
-            x_data_train , y_data_train = input_combined_train[start_index:end_index].reshape([5,96,96,2]), comparison_images_train[start_index:end_index]
+        while step < 100:
+            batch = get_batch(input_combined_train, comparison_images_train)
+            x_data_train , y_data_train = np.asarray(batch[0]), np.asarray(batch[1])
             sess.run(optimizer, feed_dict={x : x_data_train, y : y_data_train})
             loss = sess.run(error, feed_dict={x : x_data_train, y : y_data_train})
             print("training step {}. current error: {}. ".format(step, loss))
@@ -114,8 +111,8 @@ def main():
         print("--------------------------------------------------")
         print("testing accuracy")
         x_data_test, y_data_test = input_combined_test.reshape([test_size,96,96,2]), comparison_images_test
-        # final_error = sess.run(error, feed_dict={x: x_data_test, y: y_data_test})
-        # print("the average pixel difference on the test set is {}.".format(final_error))
+        final_error = sess.run(error, feed_dict={x: x_data_test, y: y_data_test})
+        print("the average pixel difference on the test set is {}.".format(final_error))
 
 if __name__ == '__main__':
     main()
