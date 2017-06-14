@@ -48,10 +48,6 @@ def main():
         'bias_out': tf.Variable(tf.random_normal([1]))
     }
 
-    # paramaters
-    learning_rate = .0001
-    training_iterations = 10000
-
     # tf Graph input
     x = tf.placeholder(tf.float32, [None, 96, 96, 2])
     y = tf.placeholder(tf.float32, [None, 96, 96, 1])
@@ -63,6 +59,14 @@ def main():
     original_images_test = np.loadtxt('../../data/sample_data/orig_140.txt')
     reconstructed_images_test = np.loadtxt('../../data/sample_data/recon_140.txt')
     comparison_images_test = np.loadtxt('../../data/sample_data/comp_140.txt')
+
+    # data
+    # original_images_train = np.loadtxt('../../data/sample_data/orig_3pics.txt')
+    # reconstructed_images_train = np.loadtxt('../../data/sample_data/recon_3pics.txt')
+    # comparison_images_train = np.loadtxt('../../data/sample_data/comp_3pics.txt')
+    # original_images_test = np.loadtxt('../../data/sample_data/orig_3pics.txt')
+    # reconstructed_images_test = np.loadtxt('../../data/sample_data/recon_3pics.txt')
+    # comparison_images_test = np.loadtxt('../../data/sample_data/comp_3pics.txt')
 
     # get size of training and testing set
     train_size = original_images_train.shape[0]
@@ -86,12 +90,16 @@ def main():
     input_combined_test = np.asarray(input_combined_test, dtype=np.float32)
     input_combined_test = np.reshape(input_combined_test, [test_size, 96,96, 2])
 
+    # paramaters
+    learning_rate = .001
+    training_iterations = 10
+
     # model
     prediction = conv_net(x, weights, biases)
 
     # loss and optimization
     cost = tf.reduce_mean(tf.square(tf.subtract(prediction, y)))
-    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
+    optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate).minimize(cost)
 
     # evaluation --- same as the cost function
     error = tf.reduce_mean(tf.square(tf.subtract(prediction, y)))
@@ -99,10 +107,14 @@ def main():
     init = tf.global_variables_initializer()
     with tf.Session() as sess:
         sess.run(init)
+        print(sess.run(weights['weights1'][0][0]))
         step = 1
-        while step < 100:
+        print("--------------------------------------------------")
+        print("starting training ... ")
+        while step < training_iterations:
             batch = get_batch(input_combined_train, comparison_images_train)
             x_data_train , y_data_train = np.asarray(batch[0]), np.asarray(batch[1])
+            # x_data_train, y_data_train = [input_combined_train[0]], [comparison_images_train[0]]
             sess.run(optimizer, feed_dict={x : x_data_train, y : y_data_train})
             loss = sess.run(error, feed_dict={x : x_data_train, y : y_data_train})
             print("training step {}. current error: {}. ".format(step, loss))
@@ -111,8 +123,10 @@ def main():
         print("--------------------------------------------------")
         print("testing accuracy")
         x_data_test, y_data_test = input_combined_test.reshape([test_size,96,96,2]), comparison_images_test
+        # x_data_test, y_data_test = [input_combined_test[0]], [comparison_images_test[0]]
         final_error = sess.run(error, feed_dict={x: x_data_test, y: y_data_test})
         print("the average pixel difference on the test set is {}.".format(final_error))
+        print(sess.run(weights['weights1'][0][0]))
 
 if __name__ == '__main__':
     main()
