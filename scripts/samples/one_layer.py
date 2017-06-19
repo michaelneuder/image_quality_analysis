@@ -6,37 +6,26 @@ np.set_printoptions(threshold=np.nan)
 import tensorflow as tf
 import time
 
-def convolve_inner_layers(x, W, b):
-    x = tf.nn.conv2d(x, W, strides = [1,1,1,1], padding='SAME')
+def convolve_layer(x, W, b):
+    x = tf.nn.conv2d(x, W, strides=[1,1,1,1], padding='SAME')
     x = tf.nn.bias_add(x, b)
     return tf.nn.sigmoid(x)
 
-def convolve_ouput_layer(x, W, b):
-    x = tf.nn.conv2d(x, W, strides=[1,1,1,1], padding='SAME')
-    x = tf.nn.bias_add(x, b)
-    return x
-
 def conv_net(x, W, b):
-    conv1 = convolve_inner_layers(x, W['weights1'], b['bias1'])
-    conv2 = convolve_inner_layers(conv1, W['weights2'], b['bias2'])
-    conv3 = convolve_inner_layers(conv2, W['weights3'], b['bias3'])
-    conv4 = convolve_inner_layers(conv3, W['weights4'], b['bias4'])
-    output = convolve_ouput_layer(conv4, W['weights_out'], b['bias_out'])
+    conv1 = convolve_layer(x, W['weights1'], b['bias1'])
+    conv2 = convolve_layer(conv1, W['weights2'], b['bias2'])
+    output = convolve_layer(conv2, W['weights_out'], b['bias_out'])
     return output
 
 def main():
     weights = {
-        'weights1': tf.Variable(tf.random_normal([11,11,2,30])),
-        'weights2': tf.Variable(tf.random_normal([11,11,30,15])),
-        'weights3': tf.Variable(tf.random_normal([11,11,15,7])),
-        'weights4': tf.Variable(tf.random_normal([11,11,7,3])),
-        'weights_out': tf.Variable(tf.random_normal([11,11,3,1]))
+        'weights1' : tf.Variable(tf.random_normal([11,11,2,10])),
+        'weights2' : tf.Variable(tf.random_normal([11,11,10,5])),
+        'weights_out': tf.Variable(tf.random_normal([11,11,5,1]))
     }
     biases = {
-        'bias1': tf.Variable(tf.random_normal([30])),
-        'bias2': tf.Variable(tf.random_normal([15])),
-        'bias3': tf.Variable(tf.random_normal([7])),
-        'bias4': tf.Variable(tf.random_normal([3])),
+        'bias1' : tf.Variable(tf.random_normal([10])),
+        'bias2' : tf.Variable(tf.random_normal([5])),
         'bias_out': tf.Variable(tf.random_normal([1]))
     }
 
@@ -75,8 +64,8 @@ def main():
     input_combined_test = np.reshape(input_combined_test, [test_size, 96,96, 2])
 
     # paramaters
-    learning_rate = .01
-    training_iterations = 10000
+    learning_rate = .1
+    training_iterations = 100000
 
     # model
     prediction = conv_net(x, weights, biases)
