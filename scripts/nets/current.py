@@ -5,6 +5,7 @@ import numpy as np
 np.set_printoptions(threshold=np.nan)
 import tensorflow as tf
 import time
+import datetime
 
 def convolve_inner_layers(x, W, b):
     x = tf.nn.conv2d(x, W, strides = [1,1,1,1], padding='SAME')
@@ -24,12 +25,12 @@ def conv_net(x, W, b):
     output = convolve_ouput_layer(conv4, W['weights_out'], b['bias_out'])
     return output
 
-def get_batch(x, y):
+def get_batch(x, y, n):
     batch_indices = np.arange(x.shape[0])
     np.random.shuffle(batch_indices)
     x_batch = []
     y_batch = []
-    for i in batch_indices[:50]:
+    for i in batch_indices[:n]:
         x_batch.append(x[i])
         y_batch.append(y[i])
     return [x_batch, y_batch]
@@ -58,12 +59,12 @@ def main():
 
     # data
     print("loading data ...")
-    original_images_train = np.loadtxt('../../data/sample_data/orig_50.txt')
-    reconstructed_images_train = np.loadtxt('../../data/sample_data/recon_50.txt')
-    comparison_images_train = np.loadtxt('../../data/sample_data/comp_50.txt')
-    original_images_test = np.loadtxt('../../data/sample_data/orig_15.txt')
-    reconstructed_images_test = np.loadtxt('../../data/sample_data/recon_15.txt')
-    comparison_images_test = np.loadtxt('../../data/sample_data/comp_15.txt')
+    original_images_train = np.loadtxt('../../data/sample_data/orig_500.txt')
+    reconstructed_images_train = np.loadtxt('../../data/sample_data/recon_500.txt')
+    comparison_images_train = np.loadtxt('../../data/sample_data/comp_500.txt')
+    original_images_test = np.loadtxt('../../data/sample_data/orig_140.txt')
+    reconstructed_images_test = np.loadtxt('../../data/sample_data/recon_140.txt')
+    comparison_images_test = np.loadtxt('../../data/sample_data/comp_140.txt')
 
     # get size of training and testing set
     train_size = original_images_train.shape[0]
@@ -88,11 +89,14 @@ def main():
     input_combined_test = np.reshape(input_combined_test, [test_size, 96,96, 2])
 
     # paramaters
-    learning_rate = .0001
+    learning_rate = .000001
     training_iterations = 10000
 
     # model
     prediction = conv_net(x, weights, biases)
+
+    # saving state
+    saver = tf.train.Saver()
 
     # loss and optimization
     cost = tf.reduce_mean(tf.square(tf.subtract(prediction, y)))
@@ -102,28 +106,34 @@ def main():
     error = tf.reduce_mean(tf.square(tf.subtract(prediction, y)))
 
     init = tf.global_variables_initializer()
-    with tf.Session() as sess:
-        sess.run(init)
-        step = 1
-        start_time = time.time()
-        print("starting training ... ")
-        while step < training_iterations:
-            batch = get_batch(input_combined_train, comparison_images_train)
-            x_data_train , y_data_train = np.asarray(batch[0]), np.asarray(batch[1])
-            # x_data_train, y_data_train = [input_combined_train[0]], [comparison_images_train[0]]
-            sess.run(optimizer, feed_dict={x : x_data_train, y : y_data_train})
-            loss = sess.run(error, feed_dict={x : x_data_train, y : y_data_train})
-            print("training step {}. current error: {}. ".format(step, loss))
-            step += 1
-        print("optimization finished!")
-        print("--------------------------------------------------")
-        print("testing accuracy")
-        x_data_test, y_data_test = input_combined_test.reshape([test_size,96,96,2]), comparison_images_test
-        # x_data_test, y_data_test = [input_combined_test[0]], [comparison_images_test[0]]
-        final_error = sess.run(error, feed_dict={x: x_data_test, y: y_data_test})
-        print("the average pixel difference on the test set is {}.".format(final_error))
-        print("--------------------------------------------------")
-        print('training took {} seconds'.format(time.time()- start_time))
+    with open('../../data/results/loss_lr{}_trn{}_tst{}.csv'.format(learning_rate, train_size, test_size), mode='w') as write_file:
+        with tf.Session() as sess:
+            sess.run(init)
+            step = 0
+            start_time = time.time()
+            print("starting training ... ")
+            write_file.write('step, error\n')
+            while step < training_iterations:
+                batch = get_batch(input_combined_train, comparison_images_train,50)
+                x_data_train , y_data_train = np.asarray(batch[0]), np.asarray(batch[1])
+                # x_data_train, y_data_train = [input_combined_train[0]], [comparison_images_train[0]]
+                sess.run(optimizer, feed_dict={x : x_data_train, y : y_data_train})
+                loss = sess.run(error, feed_dict={x : x_data_train, y : y_data_train})
+                print("training step {}. current error: {}. ".format(step, loss))
+                write_file.write(str(step)+', '+str(loss)+'\n')
+                if step % 1000 == 0:
+                    saver.save(sess, 'ts{}'.format(step))
+                step += 1
+            print("optimization finished!")
+            print("--------------------------------------------------")
+            print("testing accuracy")
+            x_data_test, y_data_test = input_combined_test.reshape([test_size,96,96,2]), comparison_images_test
+            # x_data_test, y_data_test = [input_combined_test[0]], [comparison_images_test[0]]
+            final_error = sess.run(error, feed_dict={x: x_data_test, y: y_data_test})
+            print("the average pixel difference on the test set is {}.".format(final_error))
+            print("--------------------------------------------------")
+            print('training took {} seconds'.format(time.time()- start_time))
+    write_file.close()
 
 if __name__ == '__main__':
     main()
