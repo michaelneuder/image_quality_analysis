@@ -59,12 +59,12 @@ def main():
 
     # data
     print("loading data ...")
-    original_images_train = np.loadtxt('../../data/sample_data/orig_500.txt')
-    reconstructed_images_train = np.loadtxt('../../data/sample_data/recon_500.txt')
-    comparison_images_train = np.loadtxt('../../data/sample_data/comp_500.txt')
-    original_images_test = np.loadtxt('../../data/sample_data/orig_140.txt')
-    reconstructed_images_test = np.loadtxt('../../data/sample_data/recon_140.txt')
-    comparison_images_test = np.loadtxt('../../data/sample_data/comp_140.txt')
+    original_images_train = np.loadtxt('../../../data/sample_data/orig_500.txt')
+    reconstructed_images_train = np.loadtxt('../../../data/sample_data/recon_500.txt')
+    comparison_images_train = np.loadtxt('../../../data/sample_data/comp_500.txt')
+    original_images_test = np.loadtxt('../../../data/sample_data/orig_140.txt')
+    reconstructed_images_test = np.loadtxt('../../../data/sample_data/recon_140.txt')
+    comparison_images_test = np.loadtxt('../../../data/sample_data/comp_140.txt')
 
     # get size of training and testing set
     train_size = original_images_train.shape[0]
@@ -92,23 +92,21 @@ def main():
     learning_rate = .000001
     training_iterations = 10000
 
-    with tf.device("/cpu:0"):
-        # model
-        prediction = conv_net(x, weights, biases)
+    # model
+    prediction = conv_net(x, weights, biases)
 
-        # saving state
-        saver = tf.train.Saver()
+    # saving state
+    saver = tf.train.Saver()
 
-        # loss and optimization
-        cost = tf.reduce_mean(tf.square(tf.subtract(prediction, y)))
-        optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
+    # loss and optimization
+    cost = tf.reduce_mean(tf.square(tf.subtract(prediction, y)))
+    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
 
-        # evaluation
-        error = tf.reduce_mean(tf.square(tf.subtract(prediction, y)))
+    # evaluation
+    error = tf.reduce_mean(tf.square(tf.subtract(prediction, y)))
 
-        init = tf.global_variables_initializer()
-
-    with open('../../data/results/loss_lr{}_trn{}_tst{}.csv'.format(learning_rate, train_size, test_size), mode='w') as write_file:
+    init = tf.global_variables_initializer()
+    with open('../../../data/results/loss_lr{}_trn{}_tst{}.csv'.format(learning_rate, train_size, test_size), mode='w') as write_file:
         with tf.Session() as sess:
             sess.run(init)
             step = 0
