@@ -15,14 +15,13 @@ def convolve_inner_layers(x, W, b):
 def convolve_ouput_layer(x, W, b):
     x = tf.nn.conv2d(x, W, strides=[1,1,1,1], padding='SAME')
     x = tf.nn.bias_add(x, b)
-    return tf.nn.tanh(x)
+    return x
 
 def conv_net(x, W, b):
     conv1 = convolve_inner_layers(x, W['weights1'], b['bias1'])
     conv2 = convolve_inner_layers(conv1, W['weights2'], b['bias2'])
     conv3 = convolve_inner_layers(conv2, W['weights3'], b['bias3'])
-    conv4 = convolve_inner_layers(conv3, W['weights4'], b['bias4'])
-    output = convolve_ouput_layer(conv4, W['weights_out'], b['bias_out'])
+    output = convolve_ouput_layer(conv3, W['weights_out'], b['bias_out'])
     return output
 
 def get_batch(x, y, n):
@@ -69,19 +68,32 @@ def main():
     print('  \___\___/|_| |_|\_/ \___/|_|\__,_|\__|_|\___/|_| |_|')
     print('=======================================================')
     print("initializing variables ...")
+    # weights = {
+    #     'weights1': tf.get_variable('weights1', shape=[11,11,2,30], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
+    #     'weights2': tf.get_variable('weights2', shape=[11,11,30,15], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
+    #     'weights3': tf.get_variable('weights3', shape=[11,11,15,7], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
+    #     'weights4': tf.get_variable('weights4', shape=[11,11,7,3], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
+    #     'weights_out': tf.get_variable('weights_out', shape=[11,11,3,1], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN'))
+    # }
+    # biases = {
+    #     'bias1': tf.get_variable('bias1', shape=[30], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
+    #     'bias2': tf.get_variable('bias2', shape=[15], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
+    #     'bias3': tf.get_variable('bias3', shape=[7], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
+    #     'bias4': tf.get_variable('bias4', shape=[3], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
+    #     'bias_out': tf.get_variable('bias_out', shape=[1], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN'))
+    # }
+
     weights = {
-        'weights1': tf.get_variable('weights1', shape=[11,11,2,30], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
-        'weights2': tf.get_variable('weights2', shape=[11,11,30,15], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
-        'weights3': tf.get_variable('weights3', shape=[11,11,15,7], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
-        'weights4': tf.get_variable('weights4', shape=[11,11,7,3], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
-        'weights_out': tf.get_variable('weights_out', shape=[11,11,3,1], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN'))
+        'weights1': tf.Variable((1/(11*11*10*2))*tf.random_normal([11,11,2,30])),
+        'weights2': tf.Variable((1/(11*11*10*30))*tf.random_normal([11,11,30,20])),
+        'weights3': tf.Variable((1/(11*11*10*20))*tf.random_normal([11,11,20,10])),
+        'weights_out': tf.Variable((1/(11*11*10*10))*tf.random_normal([11,11,10,1]))
     }
     biases = {
-        'bias1': tf.get_variable('bias1', shape=[30], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
-        'bias2': tf.get_variable('bias2', shape=[15], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
-        'bias3': tf.get_variable('bias3', shape=[7], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
-        'bias4': tf.get_variable('bias4', shape=[3], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
-        'bias_out': tf.get_variable('bias_out', shape=[1], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN'))
+        'bias1': tf.Variable((1/(11*11*10*30))*tf.random_normal([30])),
+        'bias2': tf.Variable((1/(11*11*10*20))*tf.random_normal([20])),
+        'bias3': tf.Variable((1/(11*11*10*10))*tf.random_normal([10])),
+        'bias_out': tf.Variable((1/(11*11*10*1))*tf.random_normal([1]))
     }
 
     # tf Graph input
@@ -159,29 +171,6 @@ def main():
             print('-------------------------------------------------------')
             epoch_count+=1
         print('optimization finished!')
-
-
-
-
-            # while global_step < training_iterations:
-            #     batch = get_batch(input_combined_train, comparison_images_train,20)
-            #     x_data_train , y_data_train = np.asarray(batch[0]), np.asarray(batch[1])
-            #     sess.run(optimizer, feed_dict={x : x_data_train, y : y_data_train})
-            #     loss = sess.run(error, feed_dict={x : x_data_train, y : y_data_train})
-            #     print("training global_step {}. current error: {}. ".format(global_step, loss))
-            #     write_file.write(str(global_step)+', '+str(loss)+'\n')
-            #     # NOTE: uncomment to save state of network
-            #     # if global_step % 1000 == 0:
-            #     #     saver.save(sess, 'ts{}'.format(global_step))
-            #     global_step += 1
-            # print("optimization finished!")
-            # print("--------------------------------------------------")
-            # print("testing accuracy")
-            # x_data_test, y_data_test = input_combined_test.reshape([test_size,96,96,2]), comparison_images_test
-            # final_error = sess.run(error, feed_dict={x: x_data_test, y: y_data_test})
-            # print("the average pixel difference on the test set is {}.".format(final_error))
-            # print("--------------------------------------------------")
-            # print('training took {} seconds'.format(time.time()-start_time))
 
 if __name__ == '__main__':
     main()
