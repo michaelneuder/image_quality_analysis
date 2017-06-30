@@ -35,23 +35,6 @@ def get_batch(x, y, n):
         y_batch.append(y[i])
     return [x_batch, y_batch]
 
-def get_epoch(x, y, n):
-    input_size = x.shape[0]
-    number_batches = int(input_size / n)
-    extra_examples = input_size % n
-    batches = {}
-    batch_indices = np.arange(input_size)
-    np.random.shuffle(batch_indices)
-    print('creating {} batches of size {} with {} leftover examples ...'.format(number_batches, n, extra_examples))
-    for i in range(number_batches):
-        temp_indices = batch_indices[15*i:15*(i+1)]
-        temp_x = []
-        temp_y = []
-        for j in temp_indices:
-
-        # bathes[i] =
-    print(input_size-extra_examples, input_size)
-
 def main():
     print("--------------------------------------------------")
     print("initializing variables ...")
@@ -104,10 +87,6 @@ def main():
             input_combined_test.append([original_images_test[i][j], reconstructed_images_test[i][j]])
     input_combined_test = np.asarray(input_combined_test, dtype=np.float32)
     input_combined_test = np.reshape(input_combined_test, [test_size, 96,96, 2])
-
-
-    print('testing')
-    get_epoch(input_combined_train, comparison_images_train, 15)
 
     # paramaters
     learning_rate = .000001
