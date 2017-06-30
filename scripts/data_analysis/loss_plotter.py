@@ -8,7 +8,7 @@ import csv
 def main():
     x_plot = []
     y_plot = []
-    with open('../../data/results/loss_lr1e-06_trn50_tst15.csv', mode='r') as csv_file:
+    with open('../../data/results/one_sample.csv', mode='r') as csv_file:
         reader = csv.reader(csv_file)
         line_count = 0
         for line in reader:
@@ -17,6 +17,7 @@ def main():
                 y_plot.append(line[1])
             line_count+=1
     csv_file.close()
+    plt.ylim(0,1)
     plt.plot(x_plot, y_plot, 'r.--', alpha=.25)
     plt.title('error over training')
     plt.xlabel('training step')

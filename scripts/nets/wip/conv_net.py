@@ -35,22 +35,39 @@ def get_batch(x, y, n):
         y_batch.append(y[i])
     return [x_batch, y_batch]
 
+def get_epoch(x, y, n):
+    input_size = x.shape[0]
+    number_batches = int(input_size / n)
+    extra_examples = input_size % n
+    batches = {}
+    batch_indices = np.arange(input_size)
+    np.random.shuffle(batch_indices)
+    print('creating {} batches of size {} with {} leftover examples ...'.format(number_batches, n, extra_examples))
+    for i in range(number_batches):
+        temp_indices = batch_indices[15*i:15*(i+1)]
+        temp_x = []
+        temp_y = []
+        for j in temp_indices:
+
+        # bathes[i] =
+    print(input_size-extra_examples, input_size)
+
 def main():
     print("--------------------------------------------------")
     print("initializing variables ...")
     weights = {
-        'weights1': tf.get_variable('weights1', shape=[11,11,2,30], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
-        'weights2': tf.get_variable('weights2', shape=[11,11,30,15], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
-        'weights3': tf.get_variable('weights3', shape=[11,11,15,7], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
-        'weights4': tf.get_variable('weights4', shape=[11,11,7,3], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
-        'weights_out': tf.get_variable('weights_out', shape=[11,11,3,1], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN'))
+        'weights1': tf.get_variable('weights1', shape=[11,11,2,30], initializer=tf.contrib.layers.variance_scaling_initializer(factor=.001,mode='FAN_IN')),
+        'weights2': tf.get_variable('weights2', shape=[11,11,30,15], initializer=tf.contrib.layers.variance_scaling_initializer(factor=.001,mode='FAN_IN')),
+        'weights3': tf.get_variable('weights3', shape=[11,11,15,7], initializer=tf.contrib.layers.variance_scaling_initializer(factor=.001,mode='FAN_IN')),
+        'weights4': tf.get_variable('weights4', shape=[11,11,7,3], initializer=tf.contrib.layers.variance_scaling_initializer(factor=.001,mode='FAN_IN')),
+        'weights_out': tf.get_variable('weights_out', shape=[11,11,3,1], initializer=tf.contrib.layers.variance_scaling_initializer(factor=.001,mode='FAN_IN'))
     }
     biases = {
-        'bias1': tf.get_variable('bias1', shape=[30], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
-        'bias2': tf.get_variable('bias2', shape=[15], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
-        'bias3': tf.get_variable('bias3', shape=[7], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
-        'bias4': tf.get_variable('bias4', shape=[3], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
-        'bias_out': tf.get_variable('bias_out', shape=[1], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN'))
+        'bias1': tf.get_variable('bias1', shape=[30], initializer=tf.contrib.layers.variance_scaling_initializer(factor=.001,mode='FAN_IN')),
+        'bias2': tf.get_variable('bias2', shape=[15], initializer=tf.contrib.layers.variance_scaling_initializer(factor=.001,mode='FAN_IN')),
+        'bias3': tf.get_variable('bias3', shape=[7], initializer=tf.contrib.layers.variance_scaling_initializer(factor=.001,mode='FAN_IN')),
+        'bias4': tf.get_variable('bias4', shape=[3], initializer=tf.contrib.layers.variance_scaling_initializer(factor=.001,mode='FAN_IN')),
+        'bias_out': tf.get_variable('bias_out', shape=[1], initializer=tf.contrib.layers.variance_scaling_initializer(factor=.001,mode='FAN_IN'))
     }
 
     # tf Graph input
@@ -88,6 +105,10 @@ def main():
     input_combined_test = np.asarray(input_combined_test, dtype=np.float32)
     input_combined_test = np.reshape(input_combined_test, [test_size, 96,96, 2])
 
+
+    print('testing')
+    get_epoch(input_combined_train, comparison_images_train, 15)
+
     # paramaters
     learning_rate = .000001
     training_iterations = 10000
@@ -114,25 +135,24 @@ def main():
             print("starting training ... ")
             write_file.write('step, error\n')
             while step < training_iterations:
-                batch = get_batch(input_combined_train, comparison_images_train,50)
+                batch = get_batch(input_combined_train, comparison_images_train,20)
                 x_data_train , y_data_train = np.asarray(batch[0]), np.asarray(batch[1])
-                # x_data_train, y_data_train = [input_combined_train[0]], [comparison_images_train[0]]
                 sess.run(optimizer, feed_dict={x : x_data_train, y : y_data_train})
                 loss = sess.run(error, feed_dict={x : x_data_train, y : y_data_train})
                 print("training step {}. current error: {}. ".format(step, loss))
                 write_file.write(str(step)+', '+str(loss)+'\n')
-                if step % 1000 == 0:
-                    saver.save(sess, 'ts{}'.format(step))
+                # NOTE: uncomment to save state of network
+                # if step % 1000 == 0:
+                #     saver.save(sess, 'ts{}'.format(step))
                 step += 1
             print("optimization finished!")
             print("--------------------------------------------------")
             print("testing accuracy")
             x_data_test, y_data_test = input_combined_test.reshape([test_size,96,96,2]), comparison_images_test
-            # x_data_test, y_data_test = [input_combined_test[0]], [comparison_images_test[0]]
             final_error = sess.run(error, feed_dict={x: x_data_test, y: y_data_test})
             print("the average pixel difference on the test set is {}.".format(final_error))
             print("--------------------------------------------------")
-            print('training took {} seconds'.format(time.time()- start_time))
+            print('training took {} seconds'.format(time.time()-start_time))
     write_file.close()
 
 if __name__ == '__main__':
