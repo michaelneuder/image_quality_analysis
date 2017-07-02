@@ -84,16 +84,16 @@ def main():
     # }
 
     weights = {
-        'weights1': tf.Variable((1/(11*11*10*2))*tf.random_normal([11,11,2,30])),
-        'weights2': tf.Variable((1/(11*11*10*30))*tf.random_normal([11,11,30,20])),
-        'weights3': tf.Variable((1/(11*11*10*20))*tf.random_normal([11,11,20,10])),
-        'weights_out': tf.Variable((1/(11*11*10*10))*tf.random_normal([11,11,10,1]))
+        'weights1': tf.Variable((1/(11*11*2))*tf.random_normal([11,11,2,30])),
+        'weights2': tf.Variable((1/(11*11*30))*tf.random_normal([11,11,30,20])),
+        'weights3': tf.Variable((1/(11*11*20))*tf.random_normal([11,11,20,10])),
+        'weights_out': tf.Variable((1/(11*11*10))*tf.random_normal([11,11,10,1]))
     }
     biases = {
-        'bias1': tf.Variable((1/(11*11*10*30))*tf.random_normal([30])),
-        'bias2': tf.Variable((1/(11*11*10*20))*tf.random_normal([20])),
-        'bias3': tf.Variable((1/(11*11*10*10))*tf.random_normal([10])),
-        'bias_out': tf.Variable((1/(11*11*10*1))*tf.random_normal([1]))
+        'bias1': tf.Variable((1/(11*11*2))*tf.random_normal([30])),
+        'bias2': tf.Variable((1/(11*11*30))*tf.random_normal([20])),
+        'bias3': tf.Variable((1/(11*11*20))*tf.random_normal([10])),
+        'bias_out': tf.Variable((1/(11*11*10))*tf.random_normal([1]))
     }
 
     # tf Graph input
