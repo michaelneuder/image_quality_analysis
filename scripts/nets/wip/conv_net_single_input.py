@@ -5,7 +5,7 @@ import numpy as np
 np.set_printoptions(threshold=np.nan)
 import tensorflow as tf
 import time
-import datetime
+from PIL import Image as im
 
 def convolve_inner_layers(x, W, b):
     x = tf.nn.conv2d(x, W, strides = [1,1,1,1], padding='SAME')
@@ -87,6 +87,16 @@ def main():
             input_combined_test.append([original_images_test[i][j], reconstructed_images_test[i][j]])
     input_combined_test = np.asarray(input_combined_test, dtype=np.float32)
     input_combined_test = np.reshape(input_combined_test, [test_size, 96,96, 2])
+    test = input_combined_train[0]
+    image1 = np.asarray(test[0], dtype='uint8')
+    image2 = np.asarray(test[1], dtype='uint8')
+    image3 = np.asarray(np.reshape(comparison_images_train[0],[96,96]), dtype='uint8')
+    image_view = im.fromarray(image1, 'L')
+    image_view.show()
+    image_view = im.fromarray(image2, 'L')
+    image_view.show()
+    image_view = im.fromarray(image3, 'L')
+    image_view.show()
 
     # paramaters
     learning_rate = .0001
