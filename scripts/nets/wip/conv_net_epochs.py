@@ -119,7 +119,7 @@ def main():
 
     # paramaters
     learning_rate = .0001
-    epochs = 5
+    epochs = 50
 
     # model
     prediction = conv_net(x, weights, biases)
@@ -134,6 +134,17 @@ def main():
     init = tf.global_variables_initializer()
     with tf.Session() as sess:
         sess.run(init)
+
+        test = np.asarray(sess.run(prediction, feed_dict={x : [input_combined_test[0]]}))
+        test1 = np.asarray([comparison_images_test[0]])
+        print(test.shape, test1.shape)
+        with open('pre_training.txt', mode = 'w') as write_file:
+            write_file.write('prediction:\n')
+            write_file.write(str(test)+'\n')
+            write_file.write('target:\n')
+            write_file.write(str(test1))
+        write_file.close()
+
         global_step = 0
         epoch_count = 0
         start_time = time.time()
@@ -153,6 +164,16 @@ def main():
             print('-------------------------------------------------------')
             epoch_count+=1
         print('optimization finished!')
+
+        test = np.asarray(sess.run(prediction, feed_dict={x : [input_combined_test[0]]}))
+        test1 = np.asarray([comparison_images_test[0]])
+        print(test.shape, test1.shape)
+        with open('post_training.txt', mode = 'w') as write_file:
+            write_file.write('prediction:\n')
+            write_file.write(str(test)+'\n')
+            write_file.write('target:\n')
+            write_file.write(str(test1))
+        write_file.close()
 
 if __name__ == '__main__':
     main()
