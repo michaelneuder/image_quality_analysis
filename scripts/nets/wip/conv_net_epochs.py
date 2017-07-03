@@ -8,14 +8,14 @@ import time
 import datetime
 
 def convolve_inner_layers(x, W, b):
-    x = tf.nn.conv2d(x, W, strides = [1,1,1,1], padding='SAME')
-    x = tf.nn.bias_add(x, b)
-    return tf.nn.tanh(x)
+    y = tf.nn.conv2d(x, W, strides = [1,1,1,1], padding='SAME')
+    y = tf.nn.bias_add(y, b)
+    return tf.nn.tanh(y)
 
 def convolve_ouput_layer(x, W, b):
-    x = tf.nn.conv2d(x, W, strides=[1,1,1,1], padding='SAME')
-    x = tf.nn.bias_add(x, b)
-    return x
+    y = tf.nn.conv2d(x, W, strides=[1,1,1,1], padding='SAME')
+    y = tf.nn.bias_add(y, b)
+    return y
 
 def conv_net(x, W, b):
     conv1 = convolve_inner_layers(x, W['weights1'], b['bias1'])
@@ -68,20 +68,6 @@ def main():
     print('  \___\___/|_| |_|\_/ \___/|_|\__,_|\__|_|\___/|_| |_|')
     print('=======================================================')
     print("initializing variables ...")
-    # weights = {
-    #     'weights1': tf.get_variable('weights1', shape=[11,11,2,30], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
-    #     'weights2': tf.get_variable('weights2', shape=[11,11,30,15], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
-    #     'weights3': tf.get_variable('weights3', shape=[11,11,15,7], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
-    #     'weights4': tf.get_variable('weights4', shape=[11,11,7,3], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
-    #     'weights_out': tf.get_variable('weights_out', shape=[11,11,3,1], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN'))
-    # }
-    # biases = {
-    #     'bias1': tf.get_variable('bias1', shape=[30], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
-    #     'bias2': tf.get_variable('bias2', shape=[15], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
-    #     'bias3': tf.get_variable('bias3', shape=[7], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
-    #     'bias4': tf.get_variable('bias4', shape=[3], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN')),
-    #     'bias_out': tf.get_variable('bias_out', shape=[1], initializer=tf.contrib.layers.variance_scaling_initializer(factor=1,mode='FAN_IN'))
-    # }
 
     weights = {
         'weights1': tf.Variable((1/(11*11*2))*tf.random_normal([11,11,2,30])),
@@ -132,8 +118,8 @@ def main():
     input_combined_test = np.reshape(input_combined_test, [test_size, 96,96, 2])
 
     # paramaters
-    learning_rate = .00001
-    epochs = 100
+    learning_rate = .0001
+    epochs = 5
 
     # model
     prediction = conv_net(x, weights, biases)
@@ -144,9 +130,6 @@ def main():
     # loss and optimization
     cost = tf.reduce_mean(tf.square(tf.subtract(prediction, y)))
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
-
-    # evaluation
-    error = tf.reduce_mean(tf.square(tf.subtract(prediction, y)))
 
     init = tf.global_variables_initializer()
     with tf.Session() as sess:
@@ -163,11 +146,10 @@ def main():
             for i in epoch:
                 x_data_train, y_data_train = epoch[i][0], epoch[i][1]
                 sess.run(optimizer, feed_dict={x : x_data_train, y : y_data_train})
-                loss = sess.run(error, feed_dict={x : x_data_train, y : y_data_train})
+                loss = sess.run(cost, feed_dict={x : x_data_train, y : y_data_train})
                 print("  -  training global_step {}. current error: {}. ".format(global_step, loss))
                 global_step+=1
-                current_error = loss
-            print('epoch {} completed in {} seconds. current error = {}'.format(epoch_count, time.time()-epoch_time ,loss))
+            print('epoch {} completed in {} seconds. current error = {}'.format(epoch_count, time.time()-epoch_time, loss))
             print('-------------------------------------------------------')
             epoch_count+=1
         print('optimization finished!')
