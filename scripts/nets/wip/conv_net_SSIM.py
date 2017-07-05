@@ -60,16 +60,16 @@ def main():
     print("initializing variables ...")
 
     weights = {
-        'weights1': tf.Variable((1/(11*11*2))*tf.random_normal([11,11,2,100])),
-        'weights2': tf.Variable((1/30)*tf.random_normal([1,1,100,50])),
-        'weights3': tf.Variable((1/20)*tf.random_normal([1,1,50,25])),
-        'weights_out': tf.Variable((1/10)*tf.random_normal([1,1,25,1]))
+        'weights1': tf.Variable((1/(11*11*2))*tf.random_normal([11,11,2,30])),
+        'weights2': tf.Variable((1/(30*11*11))*tf.random_normal([11,11,30,20])),
+        'weights3': tf.Variable((1/(20*11*11))*tf.random_normal([11,11,20,10])),
+        'weights_out': tf.Variable((1/(10*11*11))*tf.random_normal([11,11,10,1]))
     }
     biases = {
-        'bias1': tf.Variable((1/(11*11*2))*tf.random_normal([100])),
-        'bias2': tf.Variable((1/30)*tf.random_normal([50])),
-        'bias3': tf.Variable((1/20)*tf.random_normal([25])),
-        'bias_out': tf.Variable((1/10)*tf.random_normal([1]))
+        'bias1': tf.Variable((1/(11*11*2))*tf.random_normal([30])),
+        'bias2': tf.Variable((1/(30*11*11))*tf.random_normal([20])),
+        'bias3': tf.Variable((1/(20*11*11))*tf.random_normal([10])),
+        'bias_out': tf.Variable((1/(10*11*11))*tf.random_normal([1]))
     }
 
     # tf Graph input
@@ -99,7 +99,7 @@ def main():
 
     # paramaters
     learning_rate = .0001
-    epochs = 10000
+    epochs = 100
 
     # model
     prediction = conv_net(x, weights, biases)
@@ -115,6 +115,18 @@ def main():
     init = tf.global_variables_initializer()
     with tf.Session() as sess:
         sess.run(init)
+
+        test = np.asarray(sess.run(prediction, feed_dict={x : [combined_data_train[0]]}))
+        test1 = np.asarray([comparison_images_test[0]])
+        print(test.shape, test1.shape)
+        with open('pre_training.txt', mode = 'w') as write_file:
+            write_file.write('prediction:\n')
+            write_file.write(str(test)+'\n')
+            write_file.write('target:\n')
+            write_file.write(str(test1))
+        write_file.close()
+
+
         global_step = 0
         epoch_count = 0
         start_time = time.time()
@@ -134,6 +146,16 @@ def main():
             print('-------------------------------------------------------')
             epoch_count+=1
         print('optimization finished!')
+
+        test = np.asarray(sess.run(prediction, feed_dict={x : [combined_data_train[0]]}))
+        test1 = np.asarray([comparison_images_test[0]])
+        print(test.shape, test1.shape)
+        with open('post_training.txt', mode = 'w') as write_file:
+            write_file.write('prediction:\n')
+            write_file.write(str(test)+'\n')
+            write_file.write('target:\n')
+            write_file.write(str(test1))
+        write_file.close()
 
 if __name__ == '__main__':
     main()
