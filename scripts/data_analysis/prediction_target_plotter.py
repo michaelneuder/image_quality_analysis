@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 plt.rcParams['figure.figsize'] = (13,10)
 plt.rcParams['font.size'] = 18
 import csv
-from scipy import stats
+import scipy.stats as stats
 
 def main():
     prediction_plot = []
