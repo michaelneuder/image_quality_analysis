@@ -138,14 +138,11 @@ def main():
         prediction = np.asarray(sess.run(prediction, feed_dict={x : [combined_data_train[0]]}))
         target = np.asarray([comparison_images_test[0]])
         print(prediction.shape, target.shape)
-        with open('post_training.txt', mode = 'w') as write_file:
-            # write_file.write('prediction:\n')
-            # write_file.write(str(prediction)+'\n')
-            # write_file.write('target:\n')
-            # write_file.write(str(target))
-            write_file.write('target, prediction')
-            for i in range(len(prediction)):
-                write_file.write(str(target[i]) + ', ' + str(prediction[i]))
+        with open('post_training.csv', mode = 'w') as write_file:
+            write_file.write('target, prediction\n')
+            for i in range(96):
+                for j in range(96):
+                    write_file.write(str(float(target[0][i][j][0])) + ', ' + str(float(prediction[0][i][j][0])) + '\n')
         write_file.close()
 
 if __name__ == '__main__':
