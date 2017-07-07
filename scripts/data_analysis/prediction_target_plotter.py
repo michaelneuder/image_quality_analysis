@@ -40,8 +40,7 @@ def main():
         differences_squared.append(difference**2)
     differences = np.asarray(differences)
     differences_squared = np.asarray(differences_squared)
-    print(differences.mean(), differences_squared.mean())
-
+   
     x_plot = np.arange(len(target_plot))
     plt.plot(x_plot, prediction_plot, 'r+')
     plt.xlabel('pixel')
