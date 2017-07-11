@@ -23,15 +23,15 @@ def conv_net(x, W, b):
 
 def main():
     print('generating random images ... ')
-    rand_img_1 = np.random.random_sample((96,96))
-    rand_img_2 = np.random.random_sample((96,96))
+    rand_img_1 = np.random.random_sample((3,96,96))
+    rand_img_2 = np.random.random_sample((3,96,96))
     difference = abs(rand_img_1 - rand_img_2)
     sums = rand_img_1 + rand_img_2
 
-    train_data = np.reshape(np.dstack((rand_img_1, rand_img_2)), [1,96,96,2])
-    target_data = np.reshape(difference, [1,96,96,1])
+    train_data = np.reshape(np.dstack((rand_img_1, rand_img_2)), [3,96,96,2])
+    # target_data = np.reshape(difference, [1,96,96,1])
     # target_data = np.reshape(rand_img_2, [1,96,96,1])
-    # target_data = np.reshape(sums, [1,96,96,1])
+    target_data = np.reshape(sums, [3,96,96,1])
 
     scale = 1/(11*11)
 
@@ -49,8 +49,8 @@ def main():
     y = tf.placeholder(tf.float32, [None, 96, 96, 1])
 
     # paramaters
-    learning_rate = .001
-    epochs = 1000
+    learning_rate = .00001
+    epochs = 10000
 
     # model
     prediction = conv_net(x, weights, biases)
@@ -82,6 +82,16 @@ def main():
             for i in range(96):
                 for j in range(96):
                     write_file.write(str(float(target[0][i][j][0])) + ', ' + str(float(pred[0][i][j][0])) + '\n')
+        write_file.close()
+        with open('post_training_filters', mode='w') as write_file:
+            write_file.write('weights 1\n')
+            write_file.write(str(sess.run(weights['weights1'])))
+            write_file.write('\nweights output\n')
+            write_file.write(str(sess.run(weights['weights_out'])))
+            write_file.write('\nbias 1\n')
+            write_file.write(str(sess.run(biases['bias1'])))
+            write_file.write('\nbias output\n')
+            write_file.write(str(sess.run(biases['bias_out'])))
         write_file.close()
 
 if __name__ == '__main__':
