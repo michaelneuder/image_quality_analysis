@@ -10,6 +10,7 @@ def convolve_inner_layers(x, W, b):
     y = tf.nn.conv2d(x, W, strides = [1,1,1,1], padding='SAME')
     y = tf.nn.bias_add(y, b)
     return tf.nn.relu(y)
+    # return y
 
 def convolve_ouput_layer(x, W, b):
     y = tf.nn.conv2d(x, W, strides = [1,1,1,1], padding='SAME')
@@ -23,24 +24,24 @@ def conv_net(x, W, b):
 
 def main():
     print('generating random images ... ')
-    rand_img_1 = np.random.random_sample((3,96,96))
-    rand_img_2 = np.random.random_sample((3,96,96))
+    rand_img_1 = np.random.random_sample((96,96))
+    rand_img_2 = np.random.random_sample((96,96))
     difference = abs(rand_img_1 - rand_img_2)
     sums = rand_img_1 + rand_img_2
 
-    train_data = np.reshape(np.dstack((rand_img_1, rand_img_2)), [3,96,96,2])
-    # target_data = np.reshape(difference, [1,96,96,1])
+    train_data = np.reshape(np.dstack((rand_img_1, rand_img_2)), [1,96,96,2])
+    target_data = np.reshape(difference, [1,96,96,1])
     # target_data = np.reshape(rand_img_2, [1,96,96,1])
-    target_data = np.reshape(sums, [3,96,96,1])
+    # target_data = np.reshape(sums, [1,96,96,1])
 
-    scale = 1/(11*11)
+    scale = 1
 
     weights = {
-        'weights1': tf.Variable(scale*tf.random_normal([11,11,2,5])),
-        'weights_out': tf.Variable(scale*tf.random_normal([11,11,5,1]))
+        'weights1': tf.Variable(scale*tf.random_normal([1,1,2,4])),
+        'weights_out': tf.Variable(scale*tf.random_normal([1,1,4,1]))
     }
     biases = {
-        'bias1': tf.Variable(scale*tf.random_normal([5])),
+        'bias1': tf.Variable(scale*tf.random_normal([4])),
         'bias_out': tf.Variable(scale*tf.random_normal([1]))
     }
 
@@ -49,7 +50,7 @@ def main():
     y = tf.placeholder(tf.float32, [None, 96, 96, 1])
 
     # paramaters
-    learning_rate = .00001
+    learning_rate = .02
     epochs = 10000
 
     # model
@@ -93,6 +94,19 @@ def main():
             write_file.write('\nbias output\n')
             write_file.write(str(sess.run(biases['bias_out'])))
         write_file.close()
+        rand_img_3 = np.random.random_sample((96,96))
+        rand_img_4 = np.random.random_sample((96,96))
+        sums = rand_img_3 + rand_img_4
+        difference = abs(rand_img_3 - rand_img_4)
+        train_data = np.reshape(np.dstack((rand_img_3, rand_img_4)), [1,96,96,2])
+        # target_data = np.reshape(sums, [1,96,96,1])
+        target_data = np.reshape(difference, [1,96,96,1])
+        score = sess.run(cost, feed_dict={x: train_data, y: target_data})
+        print('---- score : {} ----'.format(score))
+        pred = sess.run(prediction, feed_dict={x: train_data})
+        for i in range(96):
+            # print(rand_img_3[0][i],rand_img_4[0][i],pred[0][0][i], sums[0][i])
+            print(rand_img_3[0][i],rand_img_4[0][i],pred[0][0][i], difference[0][i])
 
 if __name__ == '__main__':
     main()
