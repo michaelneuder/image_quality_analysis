@@ -20,7 +20,8 @@ def convolve_ouput_layer(x, W, b):
 def conv_net(x, W, b):
     conv1 = convolve_inner_layers(x, W['weights1'], b['bias1'])
     conv2 = convolve_inner_layers(conv1, W['weights2'], b['bias2'])
-    output = convolve_ouput_layer(conv2, W['weights_out'], b['bias_out'])
+    conv3 = convolve_inner_layers(conv2, W['weights3'], b['bias3'])
+    output = convolve_ouput_layer(conv3, W['weights_out'], b['bias_out'])
     return output
 
 def main():
@@ -32,20 +33,27 @@ def main():
 
     train_data = np.reshape(np.dstack((rand_img_1, rand_img_2)), [1,96,96,2])
     target_data = np.reshape(difference, [1,96,96,1])
-    # target_data = np.reshape(rand_img_2, [1,96,96,1])
     # target_data = np.reshape(sums, [1,96,96,1])
 
     scale = 1
+    filter_dim = 1
+    input_layer = 2
+    first_layer = 30
+    second_layer = 20
+    third_layer = 10
+    output_layer = 1
 
     weights = {
-        'weights1': tf.Variable(scale*tf.random_normal([1,1,2,4])),
-        'weights2': tf.Variable(scale*tf.random_normal([1,1,4,2])),
-        'weights_out': tf.Variable(scale*tf.random_normal([1,1,2,1]))
+        'weights1': tf.Variable((1/(filter_dim*filter_dim*input_layer))*tf.random_normal([filter_dim,filter_dim,input_layer,first_layer])),
+        'weights2': tf.Variable((1/(filter_dim*filter_dim*first_layer))*tf.random_normal([filter_dim,filter_dim,first_layer,second_layer])),
+        'weights3': tf.Variable((1/(filter_dim*filter_dim*second_layer))*tf.random_normal([filter_dim,filter_dim,second_layer,third_layer])),
+        'weights_out': tf.Variable((1/(filter_dim*filter_dim*third_layer))*tf.random_normal([filter_dim,filter_dim,third_layer,output_layer]))
     }
     biases = {
-        'bias1': tf.Variable(scale*tf.random_normal([4])),
-        'bias2': tf.Variable(scale*tf.random_normal([2])),
-        'bias_out': tf.Variable(scale*tf.random_normal([1]))
+        'bias1': tf.Variable((1/(filter_dim*filter_dim*first_layer))*tf.random_normal([first_layer])),
+        'bias2': tf.Variable((1/(filter_dim*filter_dim*second_layer))*tf.random_normal([second_layer])),
+        'bias3': tf.Variable((1/(filter_dim*filter_dim*third_layer))*tf.random_normal([third_layer])),
+        'bias_out': tf.Variable((1/(filter_dim*filter_dim*output_layer))*tf.random_normal([output_layer]))
     }
 
     # tf Graph input
@@ -53,7 +61,7 @@ def main():
     y = tf.placeholder(tf.float32, [None, 96, 96, 1])
 
     # paramaters
-    learning_rate = .01
+    learning_rate = .001
     epochs = 10000
 
     # model
