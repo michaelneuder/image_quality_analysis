@@ -19,7 +19,8 @@ def convolve_ouput_layer(x, W, b):
 
 def conv_net(x, W, b):
     conv1 = convolve_inner_layers(x, W['weights1'], b['bias1'])
-    output = convolve_ouput_layer(conv1, W['weights_out'], b['bias_out'])
+    conv2 = convolve_inner_layers(conv1, W['weights2'], b['bias2'])
+    output = convolve_ouput_layer(conv2, W['weights_out'], b['bias_out'])
     return output
 
 def main():
@@ -38,10 +39,12 @@ def main():
 
     weights = {
         'weights1': tf.Variable(scale*tf.random_normal([1,1,2,4])),
-        'weights_out': tf.Variable(scale*tf.random_normal([1,1,4,1]))
+        'weights2': tf.Variable(scale*tf.random_normal([1,1,4,2])),
+        'weights_out': tf.Variable(scale*tf.random_normal([1,1,2,1]))
     }
     biases = {
         'bias1': tf.Variable(scale*tf.random_normal([4])),
+        'bias2': tf.Variable(scale*tf.random_normal([2])),
         'bias_out': tf.Variable(scale*tf.random_normal([1]))
     }
 
@@ -50,7 +53,7 @@ def main():
     y = tf.placeholder(tf.float32, [None, 96, 96, 1])
 
     # paramaters
-    learning_rate = .02
+    learning_rate = .01
     epochs = 10000
 
     # model
@@ -87,10 +90,14 @@ def main():
         with open('post_training_filters', mode='w') as write_file:
             write_file.write('weights 1\n')
             write_file.write(str(sess.run(weights['weights1'])))
+            write_file.write('\nweights 2\n')
+            write_file.write(str(sess.run(weights['weights2'])))
             write_file.write('\nweights output\n')
             write_file.write(str(sess.run(weights['weights_out'])))
             write_file.write('\nbias 1\n')
             write_file.write(str(sess.run(biases['bias1'])))
+            write_file.write('\nbias 2\n')
+            write_file.write(str(sess.run(biases['bias2'])))
             write_file.write('\nbias output\n')
             write_file.write(str(sess.run(biases['bias_out'])))
         write_file.close()
