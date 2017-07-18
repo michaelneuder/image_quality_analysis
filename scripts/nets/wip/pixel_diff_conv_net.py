@@ -25,23 +25,28 @@ def conv_net(x, W, b):
     return output
 
 def main():
-    print('generating random images ... ')
-    rand_img_1 = np.random.random_sample((96,96))
-    rand_img_2 = np.random.random_sample((96,96))
-    difference = abs(rand_img_1 - rand_img_2)
-    sums = rand_img_1 + rand_img_2
-
-    train_data = np.reshape(np.dstack((rand_img_1, rand_img_2)), [1,96,96,2])
-    target_data = np.reshape(difference, [1,96,96,1])
-    # target_data = np.reshape(sums, [1,96,96,1])
-
-    scale = 1
+    # parameters
     filter_dim = 1
     input_layer = 2
     first_layer = 30
     second_layer = 20
     third_layer = 10
     output_layer = 1
+    number_images = 1
+
+    print('generating random images ... ')
+    rand_img_1 = np.random.random_sample((96,96))
+    rand_img_2 = np.random.random_sample((96,96))
+    difference = abs(rand_img_1 - rand_img_2)
+
+    train_data = np.reshape(np.dstack((rand_img_1, rand_img_2)), [number_images,96,96,2])
+    # train_data = np.dstack((rand_img_1, rand_img_2))
+
+    # for i in range(96):
+    #     print(rand_img_1[0][0][i], rand_img_2[0][0][i], train_data[0][0][i])
+    # exit()
+    target_data = np.reshape(difference, [number_images,96,96,1])
+    # target_data = np.reshape(sums, [1,96,96,1])
 
     weights = {
         'weights1': tf.Variable((1/(filter_dim*filter_dim*input_layer))*tf.random_normal([filter_dim,filter_dim,input_layer,first_layer])),
