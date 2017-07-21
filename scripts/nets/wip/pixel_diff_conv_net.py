@@ -28,9 +28,9 @@ def main():
     # parameters
     filter_dim = 1
     input_layer = 2
-    first_layer = 30
-    second_layer = 20
-    third_layer = 10
+    first_layer = 70
+    second_layer = 30
+    third_layer = 15
     output_layer = 1
     number_images = 1
 

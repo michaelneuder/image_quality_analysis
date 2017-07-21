@@ -59,17 +59,19 @@ def main():
     print('=======================================================')
     print("initializing variables ...")
 
+    filter_dim = 11
+
     weights = {
-        'weights1': tf.Variable((1/(11*11*2))*tf.random_normal([11,11,2,30])),
-        'weights2': tf.Variable((1/(30*11*11))*tf.random_normal([11,11,30,20])),
-        'weights3': tf.Variable((1/(20*11*11))*tf.random_normal([11,11,20,10])),
-        'weights_out': tf.Variable((1/(10*11*11))*tf.random_normal([11,11,10,1]))
+        'weights1': tf.Variable((1/(filter_dim*filter_dim*2))*tf.random_normal([filter_dim,filter_dim,2,30])),
+        'weights2': tf.Variable((1/(30*filter_dim*filter_dim))*tf.random_normal([filter_dim,filter_dim,30,20])),
+        'weights3': tf.Variable((1/(20*filter_dim*filter_dim))*tf.random_normal([filter_dim,filter_dim,20,10])),
+        'weights_out': tf.Variable((1/(10*filter_dim*filter_dim))*tf.random_normal([filter_dim,filter_dim,10,1]))
     }
     biases = {
-        'bias1': tf.Variable((1/(11*11*2))*tf.random_normal([30])),
-        'bias2': tf.Variable((1/(30*11*11))*tf.random_normal([20])),
-        'bias3': tf.Variable((1/(20*11*11))*tf.random_normal([10])),
-        'bias_out': tf.Variable((1/(10*11*11))*tf.random_normal([1]))
+        'bias1': tf.Variable((1/(filter_dim*filter_dim*2))*tf.random_normal([30])),
+        'bias2': tf.Variable((1/(30*filter_dim*filter_dim))*tf.random_normal([20])),
+        'bias3': tf.Variable((1/(20*filter_dim*filter_dim))*tf.random_normal([10])),
+        'bias_out': tf.Variable((1/(10*filter_dim*filter_dim))*tf.random_normal([1]))
     }
 
     # tf Graph input
@@ -99,7 +101,7 @@ def main():
 
     # paramaters
     learning_rate = .0001
-    epochs = 1
+    epochs = 100
 
     # model
     prediction = conv_net(x, weights, biases)
