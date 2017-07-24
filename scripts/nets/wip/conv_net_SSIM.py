@@ -100,6 +100,8 @@ def main():
     combined_data_test =  np.reshape(np.dstack((original_images_test, reconstructed_images_test)), [test_size,96,96,2])
 
     #### temporary edit --- don't forget to remove
+    for i in range(96,192):
+        print(original_images_train[0][i], reconstructed_images_train[0][i], combined_data_train[0][1][i-96])
     exit()
 
     # paramaters

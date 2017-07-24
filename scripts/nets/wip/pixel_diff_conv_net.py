@@ -27,38 +27,30 @@ def conv_net(x, W, b):
 def main():
     # parameters
     filter_dim = 1
+    number_images = 10
+    image_dim = 20
     input_layer = 2
     first_layer = 70
     second_layer = 30
     third_layer = 15
     output_layer = 1
-    number_images = 1
 
     print('generating random images ... ')
-    rand_img_1 = np.random.random_sample((2,5,5))
-    rand_img_2 = np.random.random_sample((2,5,5))
-    difference = abs(rand_img_1 - rand_img_2)
+    # train images
+    rand_img_train_1 = np.random.random_sample((number_images,image_dim**2))
+    rand_img_train_2 = np.random.random_sample((number_images,image_dim**2))
+    difference_train = abs(rand_img_train_1 - rand_img_train_2)
 
-    train_data_temp = []
-    for i in range(2):
-        for j in range(5):
-            for k in range(5):
-                train_data_temp.append([rand_img_1[i][j][k], rand_img_2[i][j][k]])
-    train_data = np.reshape(np.asarray(train_data_temp), [2,5,5,2])
-    for i in range(5):
-        print(rand_img_1[0][0][i], rand_img_2[0][0][i], train_data[0][0][i])
-    # for i in range(5):
-    #     print(rand_img_1[0][0][i], rand_img_2[0][0][i], train_data[0][0][i])
+    # test image
+    rand_img_test_1 = np.random.random_sample((1,image_dim**2))
+    rand_img_test_2 = np.random.random_sample((1,image_dim**2))
+    difference_test = abs(rand_img_test_1 - rand_img_test_2)
 
-    # train_data = np.dstack((rand_img_1, rand_img_2))
-
-    # for i in range(96):
-    #     print(rand_img_1[0][0][i], rand_img_2[0][0][i], train_data[0][0][i])
-    # exit()
-    # target_data = np.reshape(difference, [number_images,96,96,1])
-    # target_data = np.reshape(sums, [1,96,96,1])
-
-    exit()
+    # stacking & reshaping images
+    train_data = np.reshape(np.dstack((rand_img_train_1, rand_img_train_2)), [number_images,image_dim,image_dim,2])
+    test_data = np.reshape(np.dstack((rand_img_test_1, rand_img_test_2)), [1,image_dim,image_dim,2])
+    target_data_train = np.reshape(difference_train, [number_images,image_dim,image_dim,1])
+    target_data_test = np.reshape(difference_test, [1,image_dim,image_dim,1])
 
     weights = {
         'weights1': tf.Variable((1/(filter_dim*filter_dim*input_layer))*tf.random_normal([filter_dim,filter_dim,input_layer,first_layer])),
@@ -74,12 +66,12 @@ def main():
     }
 
     # tf Graph input
-    x = tf.placeholder(tf.float32, [None, 96, 96, 2])
-    y = tf.placeholder(tf.float32, [None, 96, 96, 1])
+    x = tf.placeholder(tf.float32, [None, image_dim, image_dim, 2])
+    y = tf.placeholder(tf.float32, [None, image_dim, image_dim, 1])
 
     # paramaters
     learning_rate = .001
-    epochs = 10000
+    epochs = 1000
 
     # model
     prediction = conv_net(x, weights, biases)
@@ -96,49 +88,18 @@ def main():
         start_time = time.time()
         print("starting training ... ")
         while epoch_count < epochs:
-            x_data_train, y_data_train = train_data, target_data
+            x_data_train, y_data_train = train_data, target_data_train
             sess.run(optimizer, feed_dict={x : x_data_train, y : y_data_train})
             loss = sess.run(cost, feed_dict={x : x_data_train, y : y_data_train})
             print("  -  training global_step {}. current error: {}. ".format(epoch_count, loss))
             epoch_count+=1
         print('optimization finished!')
-
-        pred = np.asarray(sess.run(prediction, feed_dict={x : train_data}))
-        target = np.asarray(target_data)
-        print(pred.shape, target.shape)
-        with open('post_training.csv', mode = 'w') as write_file:
-            write_file.write('target, prediction\n')
-            for i in range(96):
-                for j in range(96):
-                    write_file.write(str(float(target[0][i][j][0])) + ', ' + str(float(pred[0][i][j][0])) + '\n')
-        write_file.close()
-        with open('post_training_filters', mode='w') as write_file:
-            write_file.write('weights 1\n')
-            write_file.write(str(sess.run(weights['weights1'])))
-            write_file.write('\nweights 2\n')
-            write_file.write(str(sess.run(weights['weights2'])))
-            write_file.write('\nweights output\n')
-            write_file.write(str(sess.run(weights['weights_out'])))
-            write_file.write('\nbias 1\n')
-            write_file.write(str(sess.run(biases['bias1'])))
-            write_file.write('\nbias 2\n')
-            write_file.write(str(sess.run(biases['bias2'])))
-            write_file.write('\nbias output\n')
-            write_file.write(str(sess.run(biases['bias_out'])))
-        write_file.close()
-        rand_img_3 = np.random.random_sample((96,96))
-        rand_img_4 = np.random.random_sample((96,96))
-        sums = rand_img_3 + rand_img_4
-        difference = abs(rand_img_3 - rand_img_4)
-        train_data = np.reshape(np.dstack((rand_img_3, rand_img_4)), [1,96,96,2])
-        # target_data = np.reshape(sums, [1,96,96,1])
-        target_data = np.reshape(difference, [1,96,96,1])
-        score = sess.run(cost, feed_dict={x: train_data, y: target_data})
+        print('\nstarting testing...')
+        score = sess.run(cost, feed_dict={x: test_data, y: target_data_test})
+        pred = sess.run(prediction, feed_dict={x: test_data})
+        for i in range(image_dim):
+            print(rand_img_test_1[0][i],rand_img_test_2[0][i], pred[0][0][i], difference_test[0][i])
         print('---- score : {} ----'.format(score))
-        pred = sess.run(prediction, feed_dict={x: train_data})
-        for i in range(96):
-            # print(rand_img_3[0][i],rand_img_4[0][i],pred[0][0][i], sums[0][i])
-            print(rand_img_3[0][i],rand_img_4[0][i],pred[0][0][i], difference[0][i])
 
 if __name__ == '__main__':
     main()
