@@ -99,6 +99,9 @@ def main():
     combined_data_train = np.reshape(np.dstack((original_images_train, reconstructed_images_train)), [train_size,96,96,2])
     combined_data_test =  np.reshape(np.dstack((original_images_test, reconstructed_images_test)), [test_size,96,96,2])
 
+    #### temporary edit --- don't forget to remove
+    exit()
+
     # paramaters
     learning_rate = .0001
     epochs = 100

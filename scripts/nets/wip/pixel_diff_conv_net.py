@@ -35,18 +35,30 @@ def main():
     number_images = 1
 
     print('generating random images ... ')
-    rand_img_1 = np.random.random_sample((96,96))
-    rand_img_2 = np.random.random_sample((96,96))
+    rand_img_1 = np.random.random_sample((2,5,5))
+    rand_img_2 = np.random.random_sample((2,5,5))
     difference = abs(rand_img_1 - rand_img_2)
 
-    train_data = np.reshape(np.dstack((rand_img_1, rand_img_2)), [number_images,96,96,2])
+    train_data_temp = []
+    for i in range(2):
+        for j in range(5):
+            for k in range(5):
+                train_data_temp.append([rand_img_1[i][j][k], rand_img_2[i][j][k]])
+    train_data = np.reshape(np.asarray(train_data_temp), [2,5,5,2])
+    for i in range(5):
+        print(rand_img_1[0][0][i], rand_img_2[0][0][i], train_data[0][0][i])
+    # for i in range(5):
+    #     print(rand_img_1[0][0][i], rand_img_2[0][0][i], train_data[0][0][i])
+
     # train_data = np.dstack((rand_img_1, rand_img_2))
 
     # for i in range(96):
     #     print(rand_img_1[0][0][i], rand_img_2[0][0][i], train_data[0][0][i])
     # exit()
-    target_data = np.reshape(difference, [number_images,96,96,1])
+    # target_data = np.reshape(difference, [number_images,96,96,1])
     # target_data = np.reshape(sums, [1,96,96,1])
+
+    exit()
 
     weights = {
         'weights1': tf.Variable((1/(filter_dim*filter_dim*input_layer))*tf.random_normal([filter_dim,filter_dim,input_layer,first_layer])),
