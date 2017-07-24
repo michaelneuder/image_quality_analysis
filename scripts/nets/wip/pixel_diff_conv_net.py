@@ -29,7 +29,7 @@ def main():
     # parameters
     filter_dim = 11
     number_images = 100
-    image_dim = 20
+    image_dim = 50
     input_layer = 2
     first_layer = 200
     second_layer = 100
@@ -74,7 +74,7 @@ def main():
     y = tf.placeholder(tf.float32, [None, image_dim, image_dim, 1])
 
     # paramaters
-    learning_rate = .001
+    learning_rate = .0001
     epochs = 10000
 
     # model
