@@ -1,15 +1,38 @@
 #!/usr/bin/env python3
 import numpy as np
 import scipy as sp
+from PIL import Image as im
 
 def get_2d_list_slice(matrix, start_row, end_row, start_col, end_col):
     return np.asarray([row[start_col:end_col] for row in matrix[start_row:end_row]])
 
 def main():
     print('importing image files...')
-    original_images = np.loadtxt('../../data/sample_data/orig_3.txt')
-    reconstructed_images = np.loadtxt('../../data/sample_data/recon_3.txt')
-    combined_data = np.reshape(np.dstack((original_images, reconstructed_images)), [3,96,96,2])
+    orig_images = np.loadtxt('../../data/sample_data/orig_3.txt')
+    recon_images = np.loadtxt('../../data/sample_data/recon_3.txt')
+
+    num_images = orig_images.shape[0]
+
+    # reshape to add padding --- care must be taken as padding can mess things up
+    orig_images = np.reshape(orig_images, [3,96,96])
+    recon_images = np.reshape(recon_images, [3,96,96])
+
+    # adding padding for SSIM calcs
+    padding = 5
+    orig_padded = []
+    recon_padded = []
+    for i in range(num_images):
+        orig_padded.append(np.pad(orig_images[i], pad_width=padding, mode='edge'))
+        recon_padded.append(np.pad(recon_images[i], pad_width=padding, mode='edge'))
+    orig_padded = np.asarray(orig_padded)
+    recon_padded = np.asarray(recon_padded)
+
+    
+
+
+    exit()
+
+    combined_data = np.reshape(np.dstack((orig_images, recon_images)), [3,96,96,2])
     upper_right_corner_orig = []
     upper_right_corner_recon = []
 
@@ -18,9 +41,9 @@ def main():
     image_index = 2
     for i in range(0,6):
         for j in range(0,6):
-            print(original_images[image_index][96*i+j], reconstructed_images[image_index][96*i+j], combined_data[image_index][i][j])
-            upper_right_corner_orig.append(original_images[image_index][96*i+j])
-            upper_right_corner_recon.append(reconstructed_images[image_index][96*i+j])
+            print(orig_images[image_index][96*i+j], recon_images[image_index][96*i+j], combined_data[image_index][i][j])
+            upper_right_corner_orig.append(orig_images[image_index][96*i+j])
+            upper_right_corner_recon.append(recon_images[image_index][96*i+j])
     orig = np.pad(np.reshape(np.asarray(upper_right_corner_orig), [6,6]), pad_width=padding, mode='edge')
     recon = np.pad(np.reshape(np.asarray(upper_right_corner_recon), [6,6]), pad_width=padding, mode='edge')
 
@@ -49,7 +72,6 @@ def main():
     SSIM = num/den
     # print(SSIM)
     print(covar)
-
 
 if __name__ == '__main__':
     main()
