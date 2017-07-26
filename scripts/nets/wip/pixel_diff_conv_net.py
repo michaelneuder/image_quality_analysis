@@ -33,7 +33,12 @@ def main():
     second_layer = 25
     third_layer = 10
     output_layer = 1
-    initializer_scale = 10
+    initializer_scale = .01
+
+    # seeding for debug purposes --- dont forget to remove
+    SEED = 12345
+    np.random.seed(SEED)
+    tf.set_random_seed(SEED)
 
     print('generating random images ... ')
     # train images
@@ -52,17 +57,18 @@ def main():
     target_data_train = np.reshape(difference_train, [number_images,image_dim,image_dim,1])
     target_data_test = np.reshape(difference_test, [1,image_dim,image_dim,1])
 
+    # initializing variables --- fan in
     weights = {
-        'weights1': tf.Variable((1/(initializer_scale*filter_dim*filter_dim*input_layer))*tf.random_normal([filter_dim,filter_dim,input_layer,first_layer])),
-        'weights2': tf.Variable((1/(initializer_scale*filter_dim*filter_dim*first_layer))*tf.random_normal([filter_dim,filter_dim,first_layer,second_layer])),
-        'weights3': tf.Variable((1/(initializer_scale*filter_dim*filter_dim*second_layer))*tf.random_normal([filter_dim,filter_dim,second_layer,third_layer])),
-        'weights_out': tf.Variable((1/(initializer_scale*filter_dim*filter_dim*third_layer))*tf.random_normal([filter_dim,filter_dim,third_layer,output_layer]))
+        'weights1': tf.Variable(tf.random_normal([filter_dim,filter_dim,input_layer,first_layer],stddev=(1.0/(initializer_scale*filter_dim*filter_dim*input_layer)))),
+        'weights2': tf.Variable(tf.random_normal([filter_dim,filter_dim,first_layer,second_layer],stddev=(1.0/(initializer_scale*filter_dim*filter_dim*first_layer)))),
+        'weights3': tf.Variable(tf.random_normal([filter_dim,filter_dim,second_layer,third_layer],stddev=(1.0/(initializer_scale*filter_dim*filter_dim*second_layer)))),
+        'weights_out': tf.Variable(tf.random_normal([filter_dim,filter_dim,third_layer,output_layer],stddev=(1.0/(initializer_scale*filter_dim*filter_dim*third_layer))))
     }
     biases = {
-        'bias1': tf.Variable((1/(initializer_scale*filter_dim*filter_dim*first_layer))*tf.random_normal([first_layer])),
-        'bias2': tf.Variable((1/(initializer_scale*filter_dim*filter_dim*second_layer))*tf.random_normal([second_layer])),
-        'bias3': tf.Variable((1/(initializer_scale*filter_dim*filter_dim*third_layer))*tf.random_normal([third_layer])),
-        'bias_out': tf.Variable((1/(initializer_scale*filter_dim*filter_dim*output_layer))*tf.random_normal([output_layer]))
+        'bias1': tf.Variable(tf.random_normal([first_layer],stddev=(1.0/(initializer_scale*filter_dim*filter_dim*input_layer)))),
+        'bias2': tf.Variable(tf.random_normal([second_layer],stddev=(1.0/(initializer_scale*filter_dim*filter_dim*first_layer)))),
+        'bias3': tf.Variable(tf.random_normal([third_layer],stddev=(1.0/(initializer_scale*filter_dim*filter_dim*second_layer)))),
+        'bias_out': tf.Variable(tf.random_normal([output_layer],stddev=(1.0/(initializer_scale*filter_dim*filter_dim*third_layer))))
     }
 
     # tf Graph input
@@ -70,8 +76,8 @@ def main():
     y = tf.placeholder(tf.float32, [None, image_dim, image_dim, 1])
 
     # paramaters
-    learning_rate = .0001
-    epochs = 10000
+    learning_rate = .01
+    epochs = 1000
 
     # model
     prediction = conv_net(x, weights, biases)
