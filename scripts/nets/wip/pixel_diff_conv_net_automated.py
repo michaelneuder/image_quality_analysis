@@ -6,6 +6,11 @@ np.set_printoptions(threshold=np.nan)
 import tensorflow as tf
 import time
 
+# seeding for debug purposes --- dont forget to remove
+SEED = 12345
+np.random.seed(SEED)
+tf.set_random_seed(SEED)
+
 def convolve_inner_layers(x, W, b):
     y = tf.nn.conv2d(x, W, strides = [1,1,1,1], padding='SAME')
     y = tf.nn.bias_add(y, b)
@@ -23,24 +28,18 @@ def conv_net(x, W, b):
     output = convolve_ouput_layer(conv3, W['weights_out'], b['bias_out'])
     return output
 
-def main():
+def run_training(image_dim_, initializer_scale_, learning_rate_):
     # parameters
     filter_dim = 11
     number_images = 100
-    image_dim = 1
+    image_dim = image_dim_
     input_layer = 2
     first_layer = 50
     second_layer = 25
     third_layer = 10
     output_layer = 1
-    initializer_scale = .01
+    initializer_scale = initializer_scale_
 
-    # seeding for debug purposes --- dont forget to remove
-    SEED = 12345
-    np.random.seed(SEED)
-    tf.set_random_seed(SEED)
-
-    print('generating random images ... ')
     # train images
     rand_img_train_1 = np.random.random_sample((number_images,image_dim**2))
     rand_img_train_2 = np.random.random_sample((number_images,image_dim**2))
@@ -76,7 +75,7 @@ def main():
     y = tf.placeholder(tf.float32, [None, image_dim, image_dim, 1])
 
     # paramaters
-    learning_rate = .001
+    learning_rate = learning_rate_
     epochs = 1000
 
     # model
@@ -92,20 +91,31 @@ def main():
         sess.run(init)
         epoch_count = 0
         start_time = time.time()
-        print("starting training ... ")
+        print("starting training with paramaers: (im_dim={}, init_scale={}, lr={})".format(image_dim, initializer_scale, learning_rate))
         while epoch_count < epochs:
             x_data_train, y_data_train = train_data, target_data_train
             sess.run(optimizer, feed_dict={x : x_data_train, y : y_data_train})
             loss = sess.run(cost, feed_dict={x : x_data_train, y : y_data_train})
-            print("  -  training global_step {}. current error: {}. ".format(epoch_count, loss))
             epoch_count+=1
-        print('optimization finished!')
-        print('\nstarting testing...')
+        print('    optimization finished!')
         score = sess.run(cost, feed_dict={x: test_data, y: target_data_test})
-        pred = sess.run(prediction, feed_dict={x: test_data})
-        for i in range(image_dim):
-            print(rand_img_test_1[0][i],rand_img_test_2[0][i], pred[0][0][i], difference_test[0][i])
-        print('---- score : {} ----'.format(score))
+        print('    score : {} '.format(score))
+    return (image_dim, initializer_scale, learning_rate), (loss, score)
+
+def main():
+    results = {}
+    image_dims = [1,2,3,4,5]
+    init_scales = [.01, .1, 1.0, 10.0]
+    learning_rates = [.1, .01, .001]
+    for dim in image_dims:
+        for scale in init_scales:
+            for learning_rate in learning_rates:
+                setting, result = run_training(dim, scale, learning_rate)
+                results[setting] = result
+    with open('results.txt', mode='w') as write_file:
+        for setting in results:
+            write_file.write(str(setting)+','+str(results[setting])+'\n')
+    write_file.close()
 
 if __name__ == '__main__':
     main()

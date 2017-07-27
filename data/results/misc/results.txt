@@ -1,0 +1,9 @@
+results:
+
+SEED = 12345, architecture = 50-25-10-1, num_images = 100, epochs = 1000:
+  11x11 filters:
+    img_dim = 1:
+      init_scale = .01, learning_rate = .001 => end training error = 2.21e-5, test score = 9.12e-6
+      init_scale = .1, learning_rate = .001 => end training error = 2.21e-5, test score = 9.12e-6
+
+    img_dim = 3, init_scale = .1, learning_rate = .001 => end training error = 2.77e-5, test score = .0057
