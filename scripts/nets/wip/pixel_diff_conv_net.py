@@ -27,13 +27,13 @@ def main():
     # parameters
     filter_dim = 11
     number_images = 100
-    image_dim = 1
+    image_dim = 3
     input_layer = 2
     first_layer = 50
     second_layer = 25
     third_layer = 10
     output_layer = 1
-    initializer_scale = .01
+    initializer_scale = 1
 
     # seeding for debug purposes --- dont forget to remove
     SEED = 12345
