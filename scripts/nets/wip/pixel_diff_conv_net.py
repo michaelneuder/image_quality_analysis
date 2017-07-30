@@ -23,17 +23,21 @@ def conv_net(x, W, b):
     output = convolve_ouput_layer(conv3, W['weights_out'], b['bias_out'])
     return output
 
+def get_variance(training_target):
+    all_pixels = training_target.flatten()
+    return all_pixels.var()
+
 def main():
     # parameters
     filter_dim = 11
     number_images = 100
-    image_dim = 3
+    image_dim = 96
     input_layer = 2
     first_layer = 50
     second_layer = 25
     third_layer = 10
     output_layer = 1
-    initializer_scale = 1
+    initializer_scale = float(10.0)
 
     # seeding for debug purposes --- dont forget to remove
     SEED = 12345
@@ -82,6 +86,9 @@ def main():
     # model
     prediction = conv_net(x, weights, biases)
 
+    # get variance to normalize error terms during training
+    variance = get_variance(difference_train)
+
     # loss and optimization
     cost = tf.reduce_mean(tf.square(tf.subtract(prediction, y)))
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
@@ -97,7 +104,8 @@ def main():
             x_data_train, y_data_train = train_data, target_data_train
             sess.run(optimizer, feed_dict={x : x_data_train, y : y_data_train})
             loss = sess.run(cost, feed_dict={x : x_data_train, y : y_data_train})
-            print("  -  training global_step {}. current error: {}. ".format(epoch_count, loss))
+            percent_error = 100*loss/variance
+            print("  -  training global_step {}. current error: {}. percent error: {}%.".format(epoch_count, loss, percent_error))
             epoch_count+=1
         print('optimization finished!')
         print('\nstarting testing...')
