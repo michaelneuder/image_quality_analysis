@@ -27,10 +27,36 @@ def get_variance(training_target):
     all_pixels = training_target.flatten()
     return all_pixels.var()
 
+def get_epoch(x, y, n):
+    input_size = x.shape[0]
+    number_batches = int(input_size / n)
+    extra_examples = input_size % n
+    batches = {}
+    batch_indices = np.arange(input_size)
+    np.random.shuffle(batch_indices)
+    for i in range(number_batches):
+        temp_indices = batch_indices[n*i:n*(i+1)]
+        temp_x = []
+        temp_y = []
+        for j in temp_indices:
+            temp_x.append(x[j])
+            temp_y.append(y[j])
+        batches[i] = [np.asarray(temp_x), np.asarray(temp_y)]
+    if extra_examples != 0:
+        extra_indices = batch_indices[input_size-extra_examples:input_size]
+        temp_x = []
+        temp_y = []
+        for k in extra_indices:
+            temp_x.append(x[k])
+            temp_y.append(y[k])
+        batches[i+1] = [np.asarray(temp_x), np.asarray(temp_y)]
+    return batches
+
 def main():
     # parameters
     filter_dim = 11
     number_images = 100
+    batch_size = 10
     image_dim = 96
     input_layer = 2
     first_layer = 50
@@ -98,14 +124,20 @@ def main():
     with tf.Session() as sess:
         sess.run(init)
         epoch_count = 0
+        global_step = 0
         start_time = time.time()
         print("starting training ... ")
         while epoch_count < epochs:
-            x_data_train, y_data_train = train_data, target_data_train
-            sess.run(optimizer, feed_dict={x : x_data_train, y : y_data_train})
-            loss = sess.run(cost, feed_dict={x : x_data_train, y : y_data_train})
-            percent_error = 100*loss/variance
-            print("  -  training global_step {}. current error: {}. percent error: {}%.".format(epoch_count, loss, percent_error))
+            print('-------------------------------------------------------')
+            print('beginning epoch {} ...'.format(epoch_count))
+            epoch = get_epoch(train_data, target_data_train, batch_size)
+            for i in epoch:
+                x_data_train, y_data_train = np.asarray(epoch[i][0]), np.asarray(epoch[i][1])
+                sess.run(optimizer, feed_dict={x : x_data_train, y : y_data_train})
+                loss = sess.run(cost, feed_dict={x : x_data_train, y : y_data_train})
+                percent_error = 100*loss/variance
+                print("  -  training global_step {}. current error: {}. percent error: {}%.".format(global_step, loss, percent_error))
+                global_step += 1
             epoch_count+=1
         print('optimization finished!')
         print('\nstarting testing...')
