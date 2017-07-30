@@ -55,7 +55,7 @@ def get_epoch(x, y, n):
 def main():
     # parameters
     filter_dim = 11
-    number_images = 100
+    number_images = 1000
     batch_size = 10
     image_dim = 96
     input_layer = 2
@@ -106,7 +106,7 @@ def main():
     y = tf.placeholder(tf.float32, [None, image_dim, image_dim, 1])
 
     # paramaters
-    learning_rate = .001
+    learning_rate = .0001
     epochs = 1000
 
     # model
