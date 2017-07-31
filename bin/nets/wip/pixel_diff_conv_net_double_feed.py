@@ -9,7 +9,7 @@ import time
 def convolve_inner_layers(x, W, b):
     y = tf.nn.conv2d(x, W, strides = [1,1,1,1], padding='SAME')
     y = tf.nn.bias_add(y, b)
-    return tf.nn.tanh(y)
+    return tf.nn.relu(y)
 
 def convolve_ouput_layer(x, W, b):
     y = tf.nn.conv2d(x, W, strides = [1,1,1,1], padding='SAME')
@@ -19,8 +19,8 @@ def convolve_ouput_layer(x, W, b):
 def conv_net(x, W, b):
     conv1 = convolve_inner_layers(x, W['weights1'], b['bias1'])
     conv2 = convolve_inner_layers(conv1, W['weights2'], b['bias2'])
-    conv3 = convolve_inner_layers(conv2, W['weights3'], b['bias3'])
-    output = convolve_ouput_layer(conv3, W['weights_out'], b['bias_out'])
+    # conv3 = convolve_inner_layers(conv2, W['weights3'], b['bias3'])
+    output = convolve_ouput_layer(conv2, W['weights_out'], b['bias_out'])
     return output
 
 def get_variance(training_target):
@@ -56,15 +56,15 @@ def main():
     # parameters
     filter_dim = 11
     filter_dim2 = 1
-    number_images = 100
-    batch_size = 4
+    number_images = 1000
+    batch_size = 10
     image_dim = 96
     input_layer = 2
     first_layer = 50
     second_layer = 25
     third_layer = 10
     output_layer = 1
-    initializer_scale = 1.0
+    initializer_scale = float(10)
 
     # seeding for debug purposes --- dont forget to remove
     SEED = 12345
@@ -93,7 +93,7 @@ def main():
         'weights1': tf.Variable(tf.random_normal([filter_dim,filter_dim,input_layer,first_layer],stddev=(1.0/(initializer_scale*filter_dim*filter_dim*input_layer)))),
         'weights2': tf.Variable(tf.random_normal([filter_dim2,filter_dim2,first_layer,second_layer],stddev=(1.0/(initializer_scale*filter_dim2*filter_dim2*first_layer)))),
         'weights3': tf.Variable(tf.random_normal([filter_dim2,filter_dim2,second_layer,third_layer],stddev=(1.0/(initializer_scale*filter_dim2*filter_dim2*second_layer)))),
-        'weights_out': tf.Variable(tf.random_normal([filter_dim2,filter_dim2,third_layer,output_layer],stddev=(1.0/(initializer_scale*filter_dim2*filter_dim2*third_layer))))
+        'weights_out': tf.Variable(tf.random_normal([filter_dim2,filter_dim2,second_layer,output_layer],stddev=(1.0/(initializer_scale*filter_dim2*filter_dim2*third_layer))))
     }
     biases = {
         'bias1': tf.Variable(tf.random_normal([first_layer],stddev=(1.0/(initializer_scale*filter_dim*filter_dim*input_layer)))),
@@ -107,7 +107,7 @@ def main():
     y = tf.placeholder(tf.float32, [None, image_dim, image_dim, 1])
 
     # paramaters
-    learning_rate = .001
+    learning_rate = .01
     epochs = 1000
 
     # model
@@ -137,7 +137,7 @@ def main():
                 sess.run(optimizer, feed_dict={x : x_data_train, y : y_data_train})
                 loss = sess.run(cost, feed_dict={x : x_data_train, y : y_data_train})
                 percent_error = 100*loss/variance
-                print("  -  training global_step {0:4d} error: {1:8.4f} {2:8.2f}%".format(global_step, loss, percent_error))
+                print("  -  training global_step {}. current error: {}. percent error: {}%.".format(global_step, loss, percent_error))
                 global_step += 1
             epoch_count+=1
         print('optimization finished!')
