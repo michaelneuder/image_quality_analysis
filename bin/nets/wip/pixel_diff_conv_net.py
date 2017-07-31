@@ -29,7 +29,7 @@ def get_variance(training_target):
 
 def get_epoch(x, y, n):
     input_size = x.shape[0]
-    number_batches = int(input_size / n)
+    number_batches = input_size // n
     extra_examples = input_size % n
     batches = {}
     batch_indices = np.arange(input_size)
@@ -129,7 +129,8 @@ def main():
         start_time = time.time()
         print("starting training ... ")
         while epoch_count < epochs:
-            print('-------------------------------------------------------')
+            epoch_time = time.time()
+            print('--------------------------------------------------------------')
             print('beginning epoch {} ...'.format(epoch_count))
             epoch = get_epoch(train_data, target_data_train, batch_size)
             for i in epoch:
@@ -140,6 +141,7 @@ def main():
                 print("  -  training global_step {0:4d} error: {1:8.4f} {2:8.2f}%".format(global_step, loss, percent_error))
                 global_step += 1
             epoch_count+=1
+            print('epoch finished in {0:5.1f} seconds. total time training: {1:5.1f} seconds'.format(abs(epoch_time-time.time()), abs(start_time-time.time())))
         print('optimization finished!')
         print('\nstarting testing...')
         score = sess.run(cost, feed_dict={x: test_data, y: target_data_test})
