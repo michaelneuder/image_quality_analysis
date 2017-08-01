@@ -6,18 +6,23 @@ from PIL import Image as im
 def get_2d_list_slice(matrix, start_row, end_row, start_col, end_col):
     return np.asarray([row[start_col:end_col] for row in matrix[start_row:end_row]])
 
+def get_SSIM_window(matrix, row_center, col_center, padding):
+    return get_2d_list_slice(matrix, row_center-padding, row_center+padding, col_center-padding, col_center+padding)
+
 def main():
-    print('importing image files...')
+    print('importing image files ...')
     orig_images = np.loadtxt('../../data/sample_data/orig_3.txt')
     recon_images = np.loadtxt('../../data/sample_data/recon_3.txt')
 
     num_images = orig_images.shape[0]
+    image_dimension = int(np.sqrt(orig_images.shape[1]))
 
     # reshape to add padding --- care must be taken as padding can mess things up
-    orig_images = np.reshape(orig_images, [3,96,96])
-    recon_images = np.reshape(recon_images, [3,96,96])
+    orig_images = np.reshape(orig_images, [num_images,image_dimension,image_dimension])
+    recon_images = np.reshape(recon_images, [num_images,image_dimension,image_dimension])
 
     # adding padding for SSIM calcs
+    print('padding images ...')
     padding = 5
     orig_padded = []
     recon_padded = []
@@ -27,12 +32,26 @@ def main():
     orig_padded = np.asarray(orig_padded)
     recon_padded = np.asarray(recon_padded)
 
-    
+    image1 = np.asarray(orig_padded[1], dtype='uint8')
+    image2 = np.asarray(recon_padded[1], dtype='uint8')
+    image_view = im.fromarray(image1, 'L')
+    image_view.show()
+    image_view = im.fromarray(image2, 'L')
+    image_view.show()
+
+    # iterating through each pixel of original image, and get 11x11 window for calculation
+    # SSIM_scores = np.zeros(())
+    # for image in range(num_images):
+    #     for row in range(padding,orig_padded.shape[1]-padding):
+    #         for col in range(padding,orig_padded.shape[1]-padding):
+    #             current_window = get_2d_list_slice(orig_padded[image], )
+
 
 
     exit()
 
-    combined_data = np.reshape(np.dstack((orig_images, recon_images)), [3,96,96,2])
+
+
     upper_right_corner_orig = []
     upper_right_corner_recon = []
 

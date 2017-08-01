@@ -56,7 +56,7 @@ def get_epoch(x, y, n):
 def main():
     # parameters
     filter_dim = 11
-    filter_dim2 = 5
+    filter_dim2 = 11
     number_images = 100
     batch_size = 4
     image_dim = 96
