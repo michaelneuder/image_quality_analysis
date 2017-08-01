@@ -54,64 +54,16 @@ def main():
     recon_padded = np.asarray(recon_padded)
 
     # iterating through each pixel of original image, and get 11x11 window for calculation
-    SSIM_scores = np.zeros(shape=(image_dimension,image_dimension))
+    print('calculating SSIM scores ...')
+    SSIM_scores = np.zeros(shape=(num_images, image_dimension,image_dimension))
     for image in range(num_images):
         for row in range(padding,orig_padded.shape[1]-padding):
             for col in range(padding,orig_padded.shape[1]-padding):
                 current_window_orig = get_SSIM_window(orig_padded[image], row, col, padding)
                 current_window_recon = get_SSIM_window(recon_padded[image], row, col, padding)
                 score = calculate_ssim(current_window_orig, current_window_recon)
-                SSIM_scores[row-padding, col-padding] = score
-    print(SSIM_scores.shape, SSIM_scores.mean(), SSIM_scores.std())
-    hist = SSIM_scores.flatten()
-    print(hist)
-    plt.hist(hist, bins=1000, color='green')
-    plt.xlim(0,0.05)
-    plt.show()
-
-    exit()
-
-
-
-    upper_right_corner_orig = []
-    upper_right_corner_recon = []
-
-    # getting first SSIM window
-    padding = 5
-    image_index = 2
-    for i in range(0,6):
-        for j in range(0,6):
-            print(orig_images[image_index][96*i+j], recon_images[image_index][96*i+j], combined_data[image_index][i][j])
-            upper_right_corner_orig.append(orig_images[image_index][96*i+j])
-            upper_right_corner_recon.append(recon_images[image_index][96*i+j])
-    orig = np.pad(np.reshape(np.asarray(upper_right_corner_orig), [6,6]), pad_width=padding, mode='edge')
-    recon = np.pad(np.reshape(np.asarray(upper_right_corner_recon), [6,6]), pad_width=padding, mode='edge')
-
-    # slicing extra padding from right and bottom edges
-    orig = get_2d_list_slice(orig, 0, 11, 0 , 11)
-    recon = get_2d_list_slice(recon, 0, 11, 0 , 11)
-
-    # flatten because we no longer need the structure
-    orig_flat = orig.flatten()
-    recon_flat = recon.flatten()
-
-    # SSIM parameters using x=orig, y=recon for clarity -- see wikipedia on SSIM for explanation
-    k_1 = 0.01
-    k_2 = 0.03
-    L = 255
-    mean_x = np.mean(orig_flat)
-    mean_y = np.mean(recon_flat)
-    var_x = np.var(orig_flat)
-    var_y = np.var(recon_flat)
-    covar = np.cov(orig_flat, recon_flat)[0][1]
-    c_1 = (L*k_1)**2
-    c_2 = (L*k_2)**2
-
-    num = (2*mean_x*mean_y+c_1)*(2*covar+c_2)
-    den = (mean_x**2+mean_y**2+c_1)*(var_x**2+var_y**2+c_2)
-    SSIM = num/den
-    # print(SSIM)
-    print(covar)
+                SSIM_scores[image ,row-padding, col-padding] = score
+    print(SSIM_scores.mean())
 
 if __name__ == '__main__':
     main()
