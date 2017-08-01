@@ -1,13 +1,34 @@
 #!/usr/bin/env python3
 import numpy as np
 import scipy as sp
+import matplotlib.pyplot as plt
 from PIL import Image as im
 
 def get_2d_list_slice(matrix, start_row, end_row, start_col, end_col):
     return np.asarray([row[start_col:end_col] for row in matrix[start_row:end_row]])
 
 def get_SSIM_window(matrix, row_center, col_center, padding):
-    return get_2d_list_slice(matrix, row_center-padding, row_center+padding, col_center-padding, col_center+padding)
+    return get_2d_list_slice(matrix, row_center-padding, row_center+padding+1, col_center-padding, col_center+padding+1)
+
+def calculate_ssim(window_orig, window_recon):
+    if window_orig.shape != (11,11) or window_recon.shape != (11,11):
+        raise ValueError('please check window size for SSIM calculation!')
+    else:
+        orig_data = window_orig.flatten()
+        recon_data = window_recon.flatten()
+        k_1 = 0.01
+        k_2 = 0.03
+        L = 255
+        mean_x = np.mean(orig_data)
+        mean_y = np.mean(recon_data)
+        var_x = np.var(orig_data)
+        var_y = np.var(recon_data)
+        covar = np.cov(orig_data, recon_data)[0][1]
+        c_1 = (L*k_1)**2
+        c_2 = (L*k_2)**2
+        num = (2*mean_x*mean_y+c_1)*(2*covar+c_2)
+        den = (mean_x**2+mean_y**2+c_1)*(var_x**2+var_y**2+c_2)
+        return num/den
 
 def main():
     print('importing image files ...')
@@ -32,21 +53,21 @@ def main():
     orig_padded = np.asarray(orig_padded)
     recon_padded = np.asarray(recon_padded)
 
-    image1 = np.asarray(orig_padded[1], dtype='uint8')
-    image2 = np.asarray(recon_padded[1], dtype='uint8')
-    image_view = im.fromarray(image1, 'L')
-    image_view.show()
-    image_view = im.fromarray(image2, 'L')
-    image_view.show()
-
     # iterating through each pixel of original image, and get 11x11 window for calculation
-    # SSIM_scores = np.zeros(())
-    # for image in range(num_images):
-    #     for row in range(padding,orig_padded.shape[1]-padding):
-    #         for col in range(padding,orig_padded.shape[1]-padding):
-    #             current_window = get_2d_list_slice(orig_padded[image], )
-
-
+    SSIM_scores = np.zeros(shape=(image_dimension,image_dimension))
+    for image in range(num_images):
+        for row in range(padding,orig_padded.shape[1]-padding):
+            for col in range(padding,orig_padded.shape[1]-padding):
+                current_window_orig = get_SSIM_window(orig_padded[image], row, col, padding)
+                current_window_recon = get_SSIM_window(recon_padded[image], row, col, padding)
+                score = calculate_ssim(current_window_orig, current_window_recon)
+                SSIM_scores[row-padding, col-padding] = score
+    print(SSIM_scores.shape, SSIM_scores.mean(), SSIM_scores.std())
+    hist = SSIM_scores.flatten()
+    print(hist)
+    plt.hist(hist, bins=1000, color='green')
+    plt.xlim(0,0.05)
+    plt.show()
 
     exit()
 
