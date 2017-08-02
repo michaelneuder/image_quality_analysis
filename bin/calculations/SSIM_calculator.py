@@ -2,7 +2,6 @@
 import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
-from PIL import Image as im
 
 def get_2d_list_slice(matrix, start_row, end_row, start_col, end_col):
     return np.asarray([row[start_col:end_col] for row in matrix[start_row:end_row]])
@@ -65,7 +64,9 @@ def main():
                 SSIM_scores[image ,row-padding, col-padding] = score
     print('mean SSIM score = {:.4f}, std dev of SSIM scores = {:.4f}'.format(SSIM_scores.mean(), SSIM_scores.std()))
 
-    # need to implement file writing
+    # write to file
+    SSIM_scores_write = np.reshape(SSIM_scores, [num_images,image_dimension**2])
+    np.savetxt('SSIM_{}.txt'.format(num_images), SSIM_scores_write, fmt="%.6f")
 
 if __name__ == '__main__':
     main()
