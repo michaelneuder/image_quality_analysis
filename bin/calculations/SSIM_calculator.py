@@ -11,14 +11,14 @@ def get_SSIM_window(matrix, row_center, col_center, padding):
     return get_2d_list_slice(matrix, row_center-padding, row_center+padding+1, col_center-padding, col_center+padding+1)
 
 def calculate_ssim(window_orig, window_recon):
+    k_1 = 0.01
+    k_2 = 0.03
+    L = 255
     if window_orig.shape != (11,11) or window_recon.shape != (11,11):
         raise ValueError('please check window size for SSIM calculation!')
     else:
         orig_data = window_orig.flatten()
         recon_data = window_recon.flatten()
-        k_1 = 0.01
-        k_2 = 0.03
-        L = 255
         mean_x = np.mean(orig_data)
         mean_y = np.mean(recon_data)
         var_x = np.var(orig_data)
@@ -27,7 +27,7 @@ def calculate_ssim(window_orig, window_recon):
         c_1 = (L*k_1)**2
         c_2 = (L*k_2)**2
         num = (2*mean_x*mean_y+c_1)*(2*covar+c_2)
-        den = (mean_x**2+mean_y**2+c_1)*(var_x**2+var_y**2+c_2)
+        den = (mean_x**2+mean_y**2+c_1)*(var_x+var_y+c_2)
         return num/den
 
 def main():
@@ -63,7 +63,9 @@ def main():
                 current_window_recon = get_SSIM_window(recon_padded[image], row, col, padding)
                 score = calculate_ssim(current_window_orig, current_window_recon)
                 SSIM_scores[image ,row-padding, col-padding] = score
-    print(SSIM_scores.mean())
+    print('mean SSIM score = {:.4f}, std dev of SSIM scores = {:.4f}'.format(SSIM_scores.mean(), SSIM_scores.std()))
+
+    # need to implement file writing
 
 if __name__ == '__main__':
     main()
