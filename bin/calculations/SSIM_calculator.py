@@ -2,6 +2,7 @@
 import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
+from PIL import Image as im
 
 def get_2d_list_slice(matrix, start_row, end_row, start_col, end_col):
     return np.asarray([row[start_col:end_col] for row in matrix[start_row:end_row]])
@@ -31,8 +32,8 @@ def calculate_ssim(window_orig, window_recon):
 
 def main():
     print('importing image files ...')
-    orig_images = np.loadtxt('../../data/sample_data/orig_3.txt')
-    recon_images = np.loadtxt('../../data/sample_data/recon_3.txt')
+    orig_images = np.loadtxt('../../data/sample_data/orig_500.txt')
+    recon_images = np.loadtxt('../../data/sample_data/recon_500.txt')
 
     num_images = orig_images.shape[0]
     image_dimension = int(np.sqrt(orig_images.shape[1]))
@@ -56,6 +57,7 @@ def main():
     print('calculating SSIM scores ...')
     SSIM_scores = np.zeros(shape=(num_images, image_dimension,image_dimension))
     for image in range(num_images):
+        print(' - image {}'.format(image))
         for row in range(padding,orig_padded.shape[1]-padding):
             for col in range(padding,orig_padded.shape[1]-padding):
                 current_window_orig = get_SSIM_window(orig_padded[image], row, col, padding)
