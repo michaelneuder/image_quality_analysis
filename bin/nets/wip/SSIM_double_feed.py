@@ -66,7 +66,7 @@ def main():
     output_layer = 1
     initializer_scale = 1.0
     learning_rate = .00001
-    epochs = 1000
+    epochs = 100
 
     # seeding for debug purposes --- dont forget to remove
     SEED = 12345
@@ -77,10 +77,10 @@ def main():
     # train/test images
     original_images_train = np.loadtxt('../../../data/sample_data/orig_500.txt')
     reconstructed_images_train = np.loadtxt('../../../data/sample_data/recon_500.txt')
-    comparison_images_train = np.loadtxt('../../../data/sample_data/comp_500.txt')
+    comparison_images_train = np.loadtxt('../../../data/sample_data/SSIM_500.txt')
     original_images_test = np.loadtxt('../../../data/sample_data/orig_140.txt')
     reconstructed_images_test = np.loadtxt('../../../data/sample_data/recon_140.txt')
-    comparison_images_test = np.loadtxt('../../../data/sample_data/comp_140.txt')
+    comparison_images_test = np.loadtxt('../../../data/sample_data/SSIM_140.txt')
 
     # get size of training and testing set
     train_size = original_images_train.shape[0]
@@ -145,10 +145,9 @@ def main():
         print('optimization finished!')
         print('\nstarting testing...')
         score = sess.run(cost, feed_dict={x: test_data, y: target_data_test})
+        percent_error = 100*score/variance
         pred = sess.run(prediction, feed_dict={x: test_data})
-        for i in range(image_dim):
-            print(rand_img_test_1[0][i],rand_img_test_2[0][i], pred[0][0][i], difference_test[0][i])
-        print('---- score : {} ----'.format(score))
+        print('---- test score : {:.4f}, {:.4f}% ----'.format(score, percent_error))
 
 if __name__ == '__main__':
     main()

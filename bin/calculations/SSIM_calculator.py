@@ -32,8 +32,8 @@ def calculate_ssim(window_orig, window_recon):
 
 def main():
     print('importing image files ...')
-    orig_images = np.loadtxt('../../data/sample_data/orig_500.txt')
-    recon_images = np.loadtxt('../../data/sample_data/recon_500.txt')
+    orig_images = np.loadtxt('../../data/sample_data/orig_140.txt')
+    recon_images = np.loadtxt('../../data/sample_data/recon_140.txt')
 
     num_images = orig_images.shape[0]
     image_dimension = int(np.sqrt(orig_images.shape[1]))
