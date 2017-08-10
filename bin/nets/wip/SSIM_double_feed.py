@@ -65,7 +65,7 @@ def main():
     third_layer = 10
     output_layer = 1
     initializer_scale = 1.0
-    learning_rate = .001
+    learning_rate = .00001
     epochs = 1000
 
     # seeding for debug purposes --- dont forget to remove
