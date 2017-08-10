@@ -57,7 +57,6 @@ def main():
     # parameters
     filter_dim = 11
     filter_dim2 = 1
-    number_images = 100
     batch_size = 4
     image_dim = 96
     input_layer = 2
@@ -67,29 +66,33 @@ def main():
     output_layer = 1
     initializer_scale = 1.0
     learning_rate = .001
-    epochs = 130
+    epochs = 1000
 
     # seeding for debug purposes --- dont forget to remove
     SEED = 12345
     np.random.seed(SEED)
     tf.set_random_seed(SEED)
 
-    print('generating random images ... ')
-    # train images
-    rand_img_train_1 = np.random.random_sample((number_images,image_dim**2))
-    rand_img_train_2 = np.random.random_sample((number_images,image_dim**2))
-    difference_train = abs(rand_img_train_1 - rand_img_train_2)
+    print('loading image files ... ')
+    # train/test images
+    original_images_train = np.loadtxt('../../../data/sample_data/orig_500.txt')
+    reconstructed_images_train = np.loadtxt('../../../data/sample_data/recon_500.txt')
+    comparison_images_train = np.loadtxt('../../../data/sample_data/comp_500.txt')
+    original_images_test = np.loadtxt('../../../data/sample_data/orig_140.txt')
+    reconstructed_images_test = np.loadtxt('../../../data/sample_data/recon_140.txt')
+    comparison_images_test = np.loadtxt('../../../data/sample_data/comp_140.txt')
 
-    # test image
-    rand_img_test_1 = np.random.random_sample((number_images,image_dim**2))
-    rand_img_test_2 = np.random.random_sample((number_images,image_dim**2))
-    difference_test = abs(rand_img_test_1 - rand_img_test_2)
+    # get size of training and testing set
+    train_size = original_images_train.shape[0]
+    test_size = original_images_test.shape[0]
 
-    # stacking & reshaping images
-    train_data = np.reshape(np.dstack((rand_img_train_1, rand_img_train_2)), [number_images,image_dim,image_dim,2])
-    test_data = np.reshape(np.dstack((rand_img_test_1, rand_img_test_2)), [number_images,image_dim,image_dim,2])
-    target_data_train = np.reshape(difference_train, [number_images,image_dim,image_dim,1])
-    target_data_test = np.reshape(difference_test, [number_images,image_dim,image_dim,1])
+    # reshaping the result data to --- (num pics), 96, 96, 1
+    target_data_train = np.reshape(comparison_images_train, [train_size, image_dim, image_dim, 1])
+    target_data_test = np.reshape(comparison_images_test, [test_size, image_dim, image_dim, 1])
+
+    # zipping data
+    train_data = np.reshape(np.dstack((original_images_train, reconstructed_images_train)), [train_size,image_dim,image_dim,2])
+    test_data =  np.reshape(np.dstack((original_images_test, reconstructed_images_test)), [test_size,image_dim,image_dim,2])
 
     # initializing variables --- fan in
     weights = {
@@ -113,7 +116,7 @@ def main():
     prediction = conv_net(x, weights, biases)
 
     # get variance to normalize error terms during training
-    variance = get_variance(difference_train)
+    variance = get_variance(target_data_train)
 
     # loss and optimization
     cost = tf.reduce_mean(tf.square(tf.subtract(prediction, y)))
