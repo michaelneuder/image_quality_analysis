@@ -60,12 +60,12 @@ def main():
     batch_size = 4
     image_dim = 96
     input_layer = 2
-    first_layer = 50
-    second_layer = 25
-    third_layer = 10
+    first_layer = 100
+    second_layer = 50
+    third_layer = 25
     output_layer = 1
     initializer_scale = 1.0
-    learning_rate = .00001
+    learning_rate = .0000001
     epochs = 100
 
     # seeding for debug purposes --- dont forget to remove
