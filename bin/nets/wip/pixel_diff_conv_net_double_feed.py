@@ -55,7 +55,7 @@ def get_epoch(x, y, n):
 
 def main():
     # parameters
-    filter_dim = 11
+    filter_dim = 7
     filter_dim2 = 1
     number_images = 100
     batch_size = 4
@@ -65,7 +65,7 @@ def main():
     second_layer = 25
     third_layer = 10
     output_layer = 1
-    initializer_scale = 1.0
+    initializer_scale = 10.0
     learning_rate = .001
     epochs = 130
 
