@@ -52,10 +52,15 @@ def get_epoch(x, y, n):
         batches[i+1] = [np.asarray(temp_x), np.asarray(temp_y)]
     return batches
 
+def normalize_input(data):
+    data = np.asarray(data)
+    mean, std_dev = data.mean(), data.std()
+    return (data - mean) / std_dev
+
 def main():
     # parameters
     filter_dim = 11
-    filter_dim2 = 11
+    filter_dim2 = 1
     number_images = 100
     batch_size = 4
     image_dim = 96
@@ -75,19 +80,15 @@ def main():
     # train images
     rand_img_train_1_raw = np.random.random_sample((number_images,image_dim**2))
     rand_img_train_2_raw = np.random.random_sample((number_images,image_dim**2))
-    mean1, std_dev1 = rand_img_train_1_raw.mean(), rand_img_train_1_raw.std()
-    mean2, std_dev2 = rand_img_train_2_raw.mean(), rand_img_train_2_raw.std()
-    rand_img_train_1 = (rand_img_train_1_raw - mean1) / std_dev1
-    rand_img_train_2 = (rand_img_train_2_raw - mean2) / std_dev2
+    rand_img_train_1 = normalize_input(rand_img_train_1_raw)
+    rand_img_train_2 = normalize_input(rand_img_train_2_raw)
     difference_train = abs(rand_img_train_1 - rand_img_train_2)
 
     # test image
     rand_img_test_1_raw = np.random.random_sample((number_images,image_dim**2))
     rand_img_test_2_raw = np.random.random_sample((number_images,image_dim**2))
-    mean1, std_dev1 = rand_img_test_1_raw.mean(), rand_img_test_1_raw.std()
-    mean2, std_dev2 = rand_img_test_2_raw.mean(), rand_img_test_2_raw.std()
-    rand_img_test_1 = (rand_img_test_1_raw - mean1) / std_dev1
-    rand_img_test_2 = (rand_img_test_2_raw - mean2) / std_dev2
+    rand_img_test_1 = normalize_input(rand_img_test_1_raw)
+    rand_img_test_2 = normalize_input(rand_img_test_2_raw)
     difference_test = abs(rand_img_test_1 - rand_img_test_2)
 
     # stacking & reshaping images

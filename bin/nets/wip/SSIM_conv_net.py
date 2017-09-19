@@ -22,8 +22,7 @@ def conv_net(x, W, b):
     conv1 = convolve_inner_layers(x, W['weights1'], b['bias1'])
     conv2 = convolve_inner_layers(conv1, W['weights2'], b['bias2'])
     conv3 = convolve_inner_layers(conv2, W['weights3'], b['bias3'])
-    output_feed = tf.concat([conv1, conv2, conv3],3)
-    output = convolve_ouput_layer(output_feed, W['weights_out'], b['bias_out'])
+    output = convolve_ouput_layer(conv3, W['weights_out'], b['bias_out'])
     return output
 
 def get_variance(training_target):
@@ -55,6 +54,11 @@ def get_epoch(x, y, n):
         batches[i+1] = [np.asarray(temp_x), np.asarray(temp_y)]
     return batches
 
+def normalize_input(data):
+    data = np.asarray(data)
+    mean, std_dev = data.mean(), data.std()
+    return (data - mean) / std_dev
+
 def main():
     # parameters
     filter_dim = 11
@@ -78,17 +82,18 @@ def main():
     print('loading image files ... ')
     # train/test images
     orig_500 = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/orig_500.txt', header=None, delim_whitespace = True)
-    original_images_train = orig_500.values
     recon_500 = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/recon_500.txt', header=None, delim_whitespace = True)
-    reconstructed_images_train = recon_500.values
     SSIM_500 = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/SSIM_500.txt', header=None, delim_whitespace = True)
-    comparison_images_train = SSIM_500.values
-
     orig_140 = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/orig_140.txt', header=None, delim_whitespace = True)
-    original_images_test = orig_140.values
     recon_140 = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/recon_140.txt', header=None, delim_whitespace = True)
-    reconstructed_images_test = recon_140.values
     SSIM_140 = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/SSIM_140.txt', header=None, delim_whitespace = True)
+
+    # normaliztion
+    original_images_train = normalize_input(orig_500.values)
+    reconstructed_images_train = normalize_input(recon_500.values)
+    comparison_images_train_raw = SSIM_500.values
+    original_images_test = normalize_input(orig_140.values)
+    reconstructed_images_test = normalize_input(recon_140.values)
     comparison_images_test = SSIM_140.values
 
     # get size of training and testing set
@@ -108,7 +113,7 @@ def main():
         'weights1': tf.Variable(tf.random_normal([filter_dim,filter_dim,input_layer,first_layer],stddev=(1.0/(initializer_scale*filter_dim*filter_dim*input_layer)))),
         'weights2': tf.Variable(tf.random_normal([filter_dim2,filter_dim2,first_layer,second_layer],stddev=(1.0/(initializer_scale*filter_dim2*filter_dim2*first_layer)))),
         'weights3': tf.Variable(tf.random_normal([filter_dim2,filter_dim2,second_layer,third_layer],stddev=(1.0/(initializer_scale*filter_dim2*filter_dim2*second_layer)))),
-        'weights_out': tf.Variable(tf.random_normal([filter_dim2,filter_dim2,third_layer+second_layer+first_layer,output_layer],stddev=(1.0/(initializer_scale*filter_dim2*filter_dim2*third_layer))))
+        'weights_out': tf.Variable(tf.random_normal([filter_dim2,filter_dim2,third_layer,output_layer],stddev=(1.0/(initializer_scale*filter_dim2*filter_dim2*third_layer))))
     }
     biases = {
         'bias1': tf.Variable(tf.random_normal([first_layer],stddev=(1.0/(initializer_scale*filter_dim*filter_dim*input_layer)))),
