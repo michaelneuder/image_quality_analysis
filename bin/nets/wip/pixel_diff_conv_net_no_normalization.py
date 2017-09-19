@@ -73,21 +73,13 @@ def main():
 
     print('generating random images ... ')
     # train images
-    rand_img_train_1_raw = np.random.random_sample((number_images,image_dim**2))
-    rand_img_train_2_raw = np.random.random_sample((number_images,image_dim**2))
-    mean1, std_dev1 = rand_img_train_1_raw.mean(), rand_img_train_1_raw.std()
-    mean2, std_dev2 = rand_img_train_2_raw.mean(), rand_img_train_2_raw.std()
-    rand_img_train_1 = (rand_img_train_1_raw - mean1) / std_dev1
-    rand_img_train_2 = (rand_img_train_2_raw - mean2) / std_dev2
+    rand_img_train_1 = np.random.random_sample((number_images,image_dim**2))
+    rand_img_train_2 = np.random.random_sample((number_images,image_dim**2))
     difference_train = abs(rand_img_train_1 - rand_img_train_2)
 
     # test image
-    rand_img_test_1_raw = np.random.random_sample((number_images,image_dim**2))
-    rand_img_test_2_raw = np.random.random_sample((number_images,image_dim**2))
-    mean1, std_dev1 = rand_img_test_1_raw.mean(), rand_img_test_1_raw.std()
-    mean2, std_dev2 = rand_img_test_2_raw.mean(), rand_img_test_2_raw.std()
-    rand_img_test_1 = (rand_img_test_1_raw - mean1) / std_dev1
-    rand_img_test_2 = (rand_img_test_2_raw - mean2) / std_dev2
+    rand_img_test_1 = np.random.random_sample((number_images,image_dim**2))
+    rand_img_test_2 = np.random.random_sample((number_images,image_dim**2))
     difference_test = abs(rand_img_test_1 - rand_img_test_2)
 
     # stacking & reshaping images
