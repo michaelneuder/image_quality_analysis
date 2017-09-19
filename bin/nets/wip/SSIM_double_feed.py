@@ -62,9 +62,9 @@ def main():
     batch_size = 4
     image_dim = 96
     input_layer = 2
-    first_layer = 100
-    second_layer = 50
-    third_layer = 25
+    first_layer = 25
+    second_layer = 10
+    third_layer = 5
     output_layer = 1
     initializer_scale = 1.0
     learning_rate = .00001
