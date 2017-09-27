@@ -91,7 +91,7 @@ def main():
     # normaliztion
     original_images_train = normalize_input(orig_500.values)
     reconstructed_images_train = normalize_input(recon_500.values)
-    comparison_images_train_raw = SSIM_500.values
+    comparison_images_train = SSIM_500.values
     original_images_test = normalize_input(orig_140.values)
     reconstructed_images_test = normalize_input(recon_140.values)
     comparison_images_test = SSIM_140.values

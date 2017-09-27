@@ -60,7 +60,7 @@ def normalize_input(data):
 def main():
     # parameters
     filter_dim = 11
-    filter_dim2 = 1
+    filter_dim2 = 11
     number_images = 100
     batch_size = 4
     image_dim = 96
