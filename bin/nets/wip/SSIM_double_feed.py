@@ -5,7 +5,6 @@ import numpy as np
 np.set_printoptions(threshold=np.nan)
 import tensorflow as tf
 import time
-import progressbar
 import pandas as pd
 
 def convolve_inner_layers(x, W, b):
@@ -62,13 +61,13 @@ def main():
     batch_size = 4
     image_dim = 96
     input_layer = 2
-    first_layer = 25
-    second_layer = 10
-    third_layer = 5
+    first_layer = 50
+    second_layer = 25
+    third_layer = 10
     output_layer = 1
     initializer_scale = 1.0
     learning_rate = .00001
-    epochs = 200
+    epochs = 100
 
     # seeding for debug purposes --- dont forget to remove
     SEED = 12345
@@ -77,19 +76,12 @@ def main():
 
     print('loading image files ... ')
     # train/test images
-    orig_500 = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/orig_500.txt', header=None, delim_whitespace = True)
-    original_images_train = orig_500.values
-    recon_500 = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/recon_500.txt', header=None, delim_whitespace = True)
-    reconstructed_images_train = recon_500.values
-    SSIM_500 = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/SSIM_500.txt', header=None, delim_whitespace = True)
-    comparison_images_train = SSIM_500.values
-
-    orig_140 = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/orig_140.txt', header=None, delim_whitespace = True)
-    original_images_test = orig_140.values
-    recon_140 = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/recon_140.txt', header=None, delim_whitespace = True)
-    reconstructed_images_test = recon_140.values
-    SSIM_140 = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/SSIM_140.txt', header=None, delim_whitespace = True)
-    comparison_images_test = SSIM_140.values
+    original_images_train = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/orig_500.txt', header=None, delim_whitespace = True).values
+    reconstructed_images_train = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/recon_500.txt', header=None, delim_whitespace = True).values
+    comparison_images_train = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/SSIM_500.txt', header=None, delim_whitespace = True).values
+    original_images_test = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/orig_140.txt', header=None, delim_whitespace = True).values
+    reconstructed_images_test = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/recon_140.txt', header=None, delim_whitespace = True).values
+    comparison_images_test = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/SSIM_140.txt', header=None, delim_whitespace = True).values
 
     # get size of training and testing set
     train_size = original_images_train.shape[0]
@@ -139,11 +131,11 @@ def main():
         global_step = 0
         start_time = time.time()
         print("starting training ... ")
-        for j in range(epochs):
+        while epoch_count < epochs:
             print('---------------------------------------------------------')
             print('beginning epoch {} ...'.format(epoch_count))
             epoch = get_epoch(train_data, target_data_train, batch_size)
-            for i in range(len(epoch)):
+            for i in epoch:
                 x_data_train, y_data_train = np.asarray(epoch[i][0]), np.asarray(epoch[i][1])
                 sess.run(optimizer, feed_dict={x : x_data_train, y : y_data_train})
                 loss = sess.run(cost, feed_dict={x : x_data_train, y : y_data_train})
