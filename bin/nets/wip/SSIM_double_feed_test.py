@@ -54,10 +54,9 @@ def get_epoch(x, y, n):
         batches[i+1] = [np.asarray(temp_x), np.asarray(temp_y)]
     return batches
 
-def normalize_input(data):
-    data = np.asarray(data)
-    mean, std_dev = data.mean(), data.std()
-    return (data - mean) / std_dev
+def normalize_input(train_data, test_data):
+    mean, std_dev = np.mean(train_data, axis=0), np.std(train_data, axis=0)
+    return (train_data - mean) / std_dev, (test_data - mean) / std_dev
 
 def main():
     # parameters
@@ -89,11 +88,16 @@ def main():
     SSIM_140 = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/SSIM_140.txt', header=None, delim_whitespace = True)
 
     # normaliztion
-    original_images_train = normalize_input(orig_500.values)
-    reconstructed_images_train = normalize_input(recon_500.values)
+    original_images_train = orig_500.values
+    reconstructed_images_train = recon_500.values
+    original_images_test = orig_140.values
+    reconstructed_images_test = recon_140.values
+
+    training_input = np.dstack((original_images_train, reconstructed_images_train))
+    testing_input = np.dstack((original_images_test, reconstructed_images_test))
+
+    training_input_normalized, testing_input_normalized = normalize_input(training_input, testing_input)
     comparison_images_train = SSIM_500.values
-    original_images_test = normalize_input(orig_140.values)
-    reconstructed_images_test = normalize_input(recon_140.values)
     comparison_images_test = SSIM_140.values
 
     # get size of training and testing set
@@ -104,22 +108,24 @@ def main():
     target_data_train = np.reshape(comparison_images_train, [train_size, image_dim, image_dim, 1])
     target_data_test = np.reshape(comparison_images_test, [test_size, image_dim, image_dim, 1])
 
-    # zipping data
-    train_data = np.reshape(np.dstack((original_images_train, reconstructed_images_train)), [train_size,image_dim,image_dim,2])
-    test_data =  np.reshape(np.dstack((original_images_test, reconstructed_images_test)), [test_size,image_dim,image_dim,2])
+    # reshaping
+    train_data = np.reshape(training_input_normalized, [train_size,image_dim,image_dim,2])
+    test_data =  np.reshape(testing_input_normalized, [test_size,image_dim,image_dim,2])
 
     # initializing variables --- fan in
+    scaling_factor = 1.0
+    initializer = tf.contrib.layers.variance_scaling_initializer(factor=scaling_factor, mode='FAN_IN')
     weights = {
-        'weights1': tf.Variable(tf.random_normal([filter_dim,filter_dim,input_layer,first_layer],stddev=(1.0/(initializer_scale*filter_dim*filter_dim*input_layer)))),
-        'weights2': tf.Variable(tf.random_normal([filter_dim2,filter_dim2,first_layer,second_layer],stddev=(1.0/(initializer_scale*filter_dim2*filter_dim2*first_layer)))),
-        'weights3': tf.Variable(tf.random_normal([filter_dim2,filter_dim2,second_layer,third_layer],stddev=(1.0/(initializer_scale*filter_dim2*filter_dim2*second_layer)))),
-        'weights_out': tf.Variable(tf.random_normal([filter_dim2,filter_dim2,third_layer+second_layer+first_layer,output_layer],stddev=(1.0/(initializer_scale*filter_dim2*filter_dim2*third_layer))))
+        'weights1': tf.get_variable('weights1', [filter_dim,filter_dim,input_layer,first_layer], initializer=initializer),
+        'weights2': tf.get_variable('weights2', [filter_dim2,filter_dim2,first_layer,second_layer], initializer=initializer),
+        'weights3': tf.get_variable('weights3', [filter_dim2,filter_dim2,second_layer,third_layer], initializer=initializer),
+        'weights_out': tf.get_variable('weights4', [filter_dim2,filter_dim2,third_layer+second_layer+first_layer,output_layer], initializer=initializer)
     }
     biases = {
-        'bias1': tf.Variable(tf.random_normal([first_layer],stddev=(1.0/(initializer_scale*filter_dim*filter_dim*input_layer)))),
-        'bias2': tf.Variable(tf.random_normal([second_layer],stddev=(1.0/(initializer_scale*filter_dim2*filter_dim2*first_layer)))),
-        'bias3': tf.Variable(tf.random_normal([third_layer],stddev=(1.0/(initializer_scale*filter_dim2*filter_dim2*second_layer)))),
-        'bias_out': tf.Variable(tf.random_normal([output_layer],stddev=(1.0/(initializer_scale*filter_dim2*filter_dim2*third_layer))))
+        'bias1': tf.get_variable('bias1', [first_layer], initializer=initializer),
+        'bias2': tf.get_variable('bias2', [second_layer], initializer=initializer),
+        'bias3': tf.get_variable('bias3', [third_layer], initializer=initializer),
+        'bias_out': tf.get_variable('bias4', [output_layer], initializer=initializer)
     }
 
 
