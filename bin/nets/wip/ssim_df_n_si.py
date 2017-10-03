@@ -64,7 +64,7 @@ def main():
     filter_dim2 = 1
     batch_size = 4
     image_dim = 96
-    input_layer = 2
+    input_layer = 4
     first_layer = 50
     second_layer = 25
     third_layer = 10
@@ -86,16 +86,25 @@ def main():
     recon_140 = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/recon_140.txt', header=None, delim_whitespace = True)
     SSIM_140 = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/SSIM_140.txt', header=None, delim_whitespace = True)
 
-    # normaliztion
+    # getting 4 input channels for train and test
     original_images_train = orig_500.values
+    original_images_train_sq = orig_500.values**2
     reconstructed_images_train = recon_500.values
+    reconstructed_images_train_sq = recon_500.values**2
+
     original_images_test = orig_140.values
+    original_images_test_sq = orig_140.values**2
     reconstructed_images_test = recon_140.values
+    reconstructed_images_test_sq = recon_140.values**2
 
-    training_input = np.dstack((original_images_train, reconstructed_images_train))
-    testing_input = np.dstack((original_images_test, reconstructed_images_test))
+    # stack inputs
+    training_input = np.dstack((original_images_train, reconstructed_images_train, original_images_train_sq, reconstructed_images_train_sq))
+    testing_input = np.dstack((original_images_test, reconstructed_images_test, original_images_test_sq, reconstructed_images_test_sq))
 
+    # normalize inputs
     training_input_normalized, testing_input_normalized = normalize_input(training_input, testing_input)
+
+    # target values
     comparison_images_train = SSIM_500.values
     comparison_images_test = SSIM_140.values
 
@@ -104,12 +113,12 @@ def main():
     test_size = original_images_test.shape[0]
 
     # reshaping the result data to --- (num pics), 96, 96, 1
-    target_data_train = np.reshape(comparison_images_train, [train_size, image_dim, image_dim, 1])
-    target_data_test = np.reshape(comparison_images_test, [test_size, image_dim, image_dim, 1])
+    target_data_train = np.reshape(comparison_images_train, [train_size, image_dim, image_dim, output_layer])
+    target_data_test = np.reshape(comparison_images_test, [test_size, image_dim, image_dim, output_layer])
 
     # reshaping
-    train_data = np.reshape(training_input_normalized, [train_size,image_dim,image_dim,2])
-    test_data =  np.reshape(testing_input_normalized, [test_size,image_dim,image_dim,2])
+    train_data = np.reshape(training_input_normalized, [train_size,image_dim,image_dim,input_layer])
+    test_data =  np.reshape(testing_input_normalized, [test_size,image_dim,image_dim,input_layer])
 
     # initializing variables --- fan in
     scaling_factor = 1.0
@@ -129,8 +138,8 @@ def main():
 
 
     # tf Graph input
-    x = tf.placeholder(tf.float32, [None, image_dim, image_dim, 2])
-    y = tf.placeholder(tf.float32, [None, image_dim, image_dim, 1])
+    x = tf.placeholder(tf.float32, [None, image_dim, image_dim, input_layer])
+    y = tf.placeholder(tf.float32, [None, image_dim, image_dim, output_layer])
 
     # model
     prediction = conv_net(x, weights, biases)
