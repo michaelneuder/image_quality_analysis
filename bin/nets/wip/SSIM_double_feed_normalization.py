@@ -69,14 +69,13 @@ def main():
     second_layer = 25
     third_layer = 10
     output_layer = 1
-    initializer_scale = 10.0
-    learning_rate = .00001
-    epochs = 400
+    learning_rate = .01
+    epochs = 10000
 
     # seeding for debug purposes --- dont forget to remove
-    SEED = 12345
-    np.random.seed(SEED)
-    tf.set_random_seed(SEED)
+    # SEED = 12345
+    # np.random.seed(SEED)
+    # tf.set_random_seed(SEED)
 
     print('loading image files ... ')
     # train/test images
