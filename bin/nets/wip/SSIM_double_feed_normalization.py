@@ -61,7 +61,7 @@ def normalize_input(train_data, test_data):
 def main():
     # parameters
     filter_dim = 11
-    filter_dim2 = 1
+    filter_dim2 = 11
     batch_size = 4
     image_dim = 96
     input_layer = 2

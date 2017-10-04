@@ -65,9 +65,9 @@ def main():
     batch_size = 4
     image_dim = 96
     input_layer = 4
-    first_layer = 50
-    second_layer = 25
-    third_layer = 10
+    first_layer = 100
+    second_layer = 50
+    third_layer = 25
     output_layer = 1
     learning_rate = .01
     epochs = 10000
@@ -152,7 +152,7 @@ def main():
 
     # session
     init = tf.global_variables_initializer()
-    with tf.Session() as sess:
+    with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as sess:
         sess.run(init)
         epoch_count = 0
         global_step = 0
