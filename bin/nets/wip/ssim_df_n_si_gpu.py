@@ -121,37 +121,38 @@ def main():
     test_data =  np.reshape(testing_input_normalized, [test_size,image_dim,image_dim,input_layer])
 
     # initializing variables --- fan in
-    scaling_factor = 1.0
-    initializer = tf.contrib.layers.variance_scaling_initializer(factor=scaling_factor, mode='FAN_IN')
-    weights = {
-        'weights1': tf.get_variable('weights1', [filter_dim,filter_dim,input_layer,first_layer], initializer=initializer),
-        'weights2': tf.get_variable('weights2', [filter_dim2,filter_dim2,first_layer,second_layer], initializer=initializer),
-        'weights3': tf.get_variable('weights3', [filter_dim2,filter_dim2,second_layer,third_layer], initializer=initializer),
-        'weights_out': tf.get_variable('weights4', [filter_dim2,filter_dim2,third_layer+second_layer+first_layer,output_layer], initializer=initializer)
-    }
-    biases = {
-        'bias1': tf.get_variable('bias1', [first_layer], initializer=initializer),
-        'bias2': tf.get_variable('bias2', [second_layer], initializer=initializer),
-        'bias3': tf.get_variable('bias3', [third_layer], initializer=initializer),
-        'bias_out': tf.get_variable('bias4', [output_layer], initializer=initializer)
-    }
+    with tf.device("/gpu:0"):
+        scaling_factor = 1.0
+        initializer = tf.contrib.layers.variance_scaling_initializer(factor=scaling_factor, mode='FAN_IN')
+        weights = {
+            'weights1': tf.get_variable('weights1', [filter_dim,filter_dim,input_layer,first_layer], initializer=initializer),
+            'weights2': tf.get_variable('weights2', [filter_dim2,filter_dim2,first_layer,second_layer], initializer=initializer),
+            'weights3': tf.get_variable('weights3', [filter_dim2,filter_dim2,second_layer,third_layer], initializer=initializer),
+            'weights_out': tf.get_variable('weights4', [filter_dim2,filter_dim2,third_layer+second_layer+first_layer,output_layer], initializer=initializer)
+        }
+        biases = {
+            'bias1': tf.get_variable('bias1', [first_layer], initializer=initializer),
+            'bias2': tf.get_variable('bias2', [second_layer], initializer=initializer),
+            'bias3': tf.get_variable('bias3', [third_layer], initializer=initializer),
+            'bias_out': tf.get_variable('bias4', [output_layer], initializer=initializer)
+        }
 
-    # tf Graph input
-    x = tf.placeholder(tf.float32, [None, image_dim, image_dim, input_layer])
-    y = tf.placeholder(tf.float32, [None, image_dim, image_dim, output_layer])
+        # tf Graph input
+        x = tf.placeholder(tf.float32, [None, image_dim, image_dim, input_layer])
+        y = tf.placeholder(tf.float32, [None, image_dim, image_dim, output_layer])
 
-    # model
-    prediction = conv_net(x, weights, biases)
+        # model
+        prediction = conv_net(x, weights, biases)
 
-    # get variance to normalize error terms during training
-    variance = get_variance(target_data_train)
+        # get variance to normalize error terms during training
+        variance = get_variance(target_data_train)
 
-    # loss and optimization
-    cost = tf.reduce_mean(tf.square(tf.subtract(prediction, y)))
-    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
+        # loss and optimization
+        cost = tf.reduce_mean(tf.square(tf.subtract(prediction, y)))
+        optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
 
-    # session
-    init = tf.global_variables_initializer()
+        # session
+        init = tf.global_variables_initializer()
     with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as sess:
         sess.run(init)
         epoch_count = 0
