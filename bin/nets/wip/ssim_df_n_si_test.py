@@ -26,8 +26,11 @@ def conv_net(x, W, b):
     return output
 
 def get_variance(training_target):
-    all_pixels = training_target.flatten()
-    return all_pixels.var()
+    print(training_target.shape)
+    x =tf.nn.moments(training_target, axes=[0])
+    print(x.shape)
+    exit()
+    return
 
 def get_epoch(x, y, n):
     input_size = x.shape[0]
@@ -65,9 +68,9 @@ def main():
     batch_size = 4
     image_dim = 96
     input_layer = 4
-    first_layer = 100
-    second_layer = 50
-    third_layer = 25
+    first_layer = 30
+    second_layer = 30
+    third_layer = 30
     output_layer = 1
     learning_rate = .01
     epochs = 10000
@@ -147,7 +150,7 @@ def main():
     variance = get_variance(target_data_train)
 
     # loss and optimization
-    cost = tf.reduce_mean(tf.square(tf.subtract(prediction, y)))
+    cost = tf.reduce_mean(get_variance(tf.square(tf.subtract(prediction, y))))
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
 
     # session
