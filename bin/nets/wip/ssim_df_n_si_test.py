@@ -26,11 +26,11 @@ def conv_net(x, W, b):
     return output
 
 def get_variance(training_target):
-    print(training_target.shape)
-    x =tf.nn.moments(training_target, axes=[0])
-    print(x.shape)
-    exit()
-    return
+    return np.var(training_target, axis=0)
+
+def get_variance_old(training_target):
+    all_pixels = training_target.flatten()
+    return all_pixels.var()
 
 def get_epoch(x, y, n):
     input_size = x.shape[0]
@@ -147,10 +147,11 @@ def main():
     prediction = conv_net(x, weights, biases)
 
     # get variance to normalize error terms during training
-    variance = get_variance(target_data_train)
+    variance = get_variance_old(target_data_train)
 
     # loss and optimization
-    cost = tf.reduce_mean(get_variance(tf.square(tf.subtract(prediction, y))))
+    # variance = np.mean(get_variance(target_data_train))
+    cost = tf.reduce_mean(tf.square(tf.subtract(prediction, y)))
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
 
     # session
