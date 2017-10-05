@@ -8,12 +8,12 @@ import time
 import pandas as pd
 
 def convolve_inner_layers(x, W, b):
-    y = tf.nn.conv2d(x, W, strides = [1,1,1,1], padding='VALID')
+    y = tf.nn.conv2d(x, W, strides = [1,1,1,1], padding='SAME')
     y = tf.nn.bias_add(y, b)
     return tf.nn.tanh(y)
 
 def convolve_ouput_layer(x, W, b):
-    y = tf.nn.conv2d(x, W, strides = [1,1,1,1], padding='VALID')
+    y = tf.nn.conv2d(x, W, strides = [1,1,1,1], padding='SAME')
     y = tf.nn.bias_add(y, b)
     return y
 
@@ -58,32 +58,13 @@ def normalize_input(train_data, test_data):
     mean, std_dev = np.mean(train_data, axis=0), np.std(train_data, axis=0)
     return (train_data - mean) / std_dev, (test_data - mean) / std_dev
 
-def calculate_ssim(window_orig, window_recon):
-    k_1 = 0.01
-    k_2 = 0.03
-    L = 255
-    if window_orig.shape != (11,11) or window_recon.shape != (11,11):
-        raise ValueError('please check window size for SSIM calculation!')
-    orig_data = window_orig.flatten()
-    recon_data = window_recon.flatten()
-    mean_x = np.mean(orig_data)
-    mean_y = np.mean(recon_data)
-    var_x = np.var(orig_data)
-    var_y = np.var(recon_data)
-    covar = np.cov(orig_data, recon_data)[0][1]
-    c_1 = (L*k_1)**2
-    c_2 = (L*k_2)**2
-    num = (2*mean_x*mean_y+c_1)*(2*covar+c_2)
-    den = (mean_x**2+mean_y**2+c_1)*(var_x+var_y+c_2)
-    return num/den
-
 def main():
     # parameters
     filter_dim = 11
-    filter_dim2 = 1
+    filter_dim2 = 11
     batch_size = 4
     image_dim = 96
-    input_layer = 4
+    input_layer = 2
     first_layer = 50
     second_layer = 25
     third_layer = 10
@@ -105,25 +86,16 @@ def main():
     recon_140 = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/recon_140.txt', header=None, delim_whitespace = True)
     SSIM_140 = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/SSIM_140.txt', header=None, delim_whitespace = True)
 
-    # getting 4 input channels for train and test
+    # normaliztion
     original_images_train = orig_500.values
-    original_images_train_sq = orig_500.values**2
     reconstructed_images_train = recon_500.values
-    reconstructed_images_train_sq = recon_500.values**2
-
     original_images_test = orig_140.values
-    original_images_test_sq = orig_140.values**2
     reconstructed_images_test = recon_140.values
-    reconstructed_images_test_sq = recon_140.values**2
 
-    # stack inputs
-    training_input = np.dstack((original_images_train, reconstructed_images_train, original_images_train_sq, reconstructed_images_train_sq))
-    testing_input = np.dstack((original_images_test, reconstructed_images_test, original_images_test_sq, reconstructed_images_test_sq))
+    training_input = np.dstack((original_images_train, reconstructed_images_train))
+    testing_input = np.dstack((original_images_test, reconstructed_images_test))
 
-    # normalize inputs
     training_input_normalized, testing_input_normalized = normalize_input(training_input, testing_input)
-
-    # target values
     comparison_images_train = SSIM_500.values
     comparison_images_test = SSIM_140.values
 
@@ -132,33 +104,13 @@ def main():
     test_size = original_images_test.shape[0]
 
     # reshaping the result data to --- (num pics), 96, 96, 1
-    target_data_train = np.reshape(comparison_images_train, [train_size, image_dim, image_dim, output_layer])
-    target_data_test = np.reshape(comparison_images_test, [test_size, image_dim, image_dim, output_layer])
+    target_data_train = np.reshape(comparison_images_train, [train_size, image_dim, image_dim, 1])
+    target_data_test = np.reshape(comparison_images_test, [test_size, image_dim, image_dim, 1])
 
     # reshaping
-    train_data = np.reshape(training_input_normalized, [train_size,image_dim,image_dim,input_layer])
-    test_data =  np.reshape(testing_input_normalized, [test_size,image_dim,image_dim,input_layer])
+    train_data = np.reshape(training_input_normalized, [train_size,image_dim,image_dim,2])
+    test_data =  np.reshape(testing_input_normalized, [test_size,image_dim,image_dim,2])
 
-    image_dim = 11
-    single_train_data, single_train_target = [], []
-    for i in range(train_data.shape[0]):
-        single_train_target.append(target_data_train[i,5,5,0])
-        for j in range(11):
-            for k in range(11):
-                single_train_data.append(train_data[i,j,k])
-
-    single_train_data = np.reshape(np.asarray(single_train_data), (train_data.shape[0], 11, 11, 4))
-    single_train_target = np.reshape(np.asarray(single_train_target), (train_data.shape[0], 1))
-
-    ssim = []
-    for i in range(single_train_data.shape[0]):
-        ssim.append(calculate_ssim(single_train_data[i][...,0], single_train_data[i][...,1]))
-    ssim = np.asarray(ssim)
-
-    for i in range(ssim.shape[0]):
-        print(ssim[i]- single_train_target[i][0])
-
-    return
     # initializing variables --- fan in
     scaling_factor = 1.0
     initializer = tf.contrib.layers.variance_scaling_initializer(factor=scaling_factor, mode='FAN_IN')
@@ -175,9 +127,10 @@ def main():
         'bias_out': tf.get_variable('bias4', [output_layer], initializer=initializer)
     }
 
+
     # tf Graph input
-    x = tf.placeholder(tf.float32, [None, image_dim, image_dim, input_layer])
-    y = tf.placeholder(tf.float32, [None, output_layer])
+    x = tf.placeholder(tf.float32, [None, image_dim, image_dim, 2])
+    y = tf.placeholder(tf.float32, [None, image_dim, image_dim, 1])
 
     # model
     prediction = conv_net(x, weights, biases)
@@ -200,7 +153,7 @@ def main():
         while epoch_count < epochs:
             print('---------------------------------------------------------')
             print('beginning epoch {} ...'.format(epoch_count))
-            epoch = get_epoch(single_train_data, single_train_target, batch_size)
+            epoch = get_epoch(train_data, target_data_train, batch_size)
             for i in epoch:
                 x_data_train, y_data_train = np.asarray(epoch[i][0]), np.asarray(epoch[i][1])
                 sess.run(optimizer, feed_dict={x : x_data_train, y : y_data_train})
@@ -210,11 +163,11 @@ def main():
                 global_step += 1
             epoch_count+=1
         print('optimization finished!')
-        # print('\nstarting testing...')
-        # score = sess.run(cost, feed_dict={x: test_data, y: target_data_test})
-        # percent_error = 100*score/variance
-        # pred = sess.run(prediction, feed_dict={x: test_data})
-        # print('---- test score : {:.4f}, {:.4f}% ----'.format(score, percent_error))
+        print('\nstarting testing...')
+        score = sess.run(cost, feed_dict={x: test_data, y: target_data_test})
+        percent_error = 100*score/variance
+        pred = sess.run(prediction, feed_dict={x: test_data})
+        print('---- test score : {:.4f}, {:.4f}% ----'.format(score, percent_error))
 
 if __name__ == '__main__':
     main()
