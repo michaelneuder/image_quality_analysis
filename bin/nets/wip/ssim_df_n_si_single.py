@@ -65,9 +65,9 @@ def main():
     batch_size = 4
     image_dim = 96
     input_layer = 4
-    first_layer = 100
-    second_layer = 50
-    third_layer = 25
+    first_layer = 50
+    second_layer = 25
+    third_layer = 10
     output_layer = 1
     learning_rate = .01
     epochs = 10000
@@ -120,40 +120,55 @@ def main():
     train_data = np.reshape(training_input_normalized, [train_size,image_dim,image_dim,input_layer])
     test_data =  np.reshape(testing_input_normalized, [test_size,image_dim,image_dim,input_layer])
 
+    mini_train_data = []
+    for i in range(train_data.shape[0]):
+        for j in range(11):
+            for k in range(11):
+                mini_train_data.append(train_data[i,j,k])
+    mini_train_data = np.reshape(np.asarray(mini_train_data), (train_data.shape[0], 11, 11, 4))
+
+    error = []
+    for i in range(train_data.shape[0]):
+        for j in range(11):
+            for k in range(11):
+                for l in range(4):
+                    error.append(mini_train_data[i][j][k][l]-train_data[i][j][k][l])
+    print(error)
+    return
+
     # initializing variables --- fan in
-    with tf.device("/gpu:0"):
-        scaling_factor = 1.0
-        initializer = tf.contrib.layers.variance_scaling_initializer(factor=scaling_factor, mode='FAN_IN')
-        weights = {
-            'weights1': tf.get_variable('weights1', [filter_dim,filter_dim,input_layer,first_layer], initializer=initializer),
-            'weights2': tf.get_variable('weights2', [filter_dim2,filter_dim2,first_layer,second_layer], initializer=initializer),
-            'weights3': tf.get_variable('weights3', [filter_dim2,filter_dim2,second_layer,third_layer], initializer=initializer),
-            'weights_out': tf.get_variable('weights4', [filter_dim2,filter_dim2,third_layer+second_layer+first_layer,output_layer], initializer=initializer)
-        }
-        biases = {
-            'bias1': tf.get_variable('bias1', [first_layer], initializer=initializer),
-            'bias2': tf.get_variable('bias2', [second_layer], initializer=initializer),
-            'bias3': tf.get_variable('bias3', [third_layer], initializer=initializer),
-            'bias_out': tf.get_variable('bias4', [output_layer], initializer=initializer)
-        }
+    scaling_factor = 1.0
+    initializer = tf.contrib.layers.variance_scaling_initializer(factor=scaling_factor, mode='FAN_IN')
+    weights = {
+        'weights1': tf.get_variable('weights1', [filter_dim,filter_dim,input_layer,first_layer], initializer=initializer),
+        'weights2': tf.get_variable('weights2', [filter_dim2,filter_dim2,first_layer,second_layer], initializer=initializer),
+        'weights3': tf.get_variable('weights3', [filter_dim2,filter_dim2,second_layer,third_layer], initializer=initializer),
+        'weights_out': tf.get_variable('weights4', [filter_dim2,filter_dim2,third_layer+second_layer+first_layer,output_layer], initializer=initializer)
+    }
+    biases = {
+        'bias1': tf.get_variable('bias1', [first_layer], initializer=initializer),
+        'bias2': tf.get_variable('bias2', [second_layer], initializer=initializer),
+        'bias3': tf.get_variable('bias3', [third_layer], initializer=initializer),
+        'bias_out': tf.get_variable('bias4', [output_layer], initializer=initializer)
+    }
 
-        # tf Graph input
-        x = tf.placeholder(tf.float32, [None, image_dim, image_dim, input_layer])
-        y = tf.placeholder(tf.float32, [None, image_dim, image_dim, output_layer])
+    # tf Graph input
+    x = tf.placeholder(tf.float32, [None, image_dim, image_dim, input_layer])
+    y = tf.placeholder(tf.float32, [None, image_dim, image_dim, output_layer])
 
-        # model
-        prediction = conv_net(x, weights, biases)
+    # model
+    prediction = conv_net(x, weights, biases)
 
-        # get variance to normalize error terms during training
-        variance = get_variance(target_data_train)
+    # get variance to normalize error terms during training
+    variance = get_variance(target_data_train)
 
-        # loss and optimization
-        cost = tf.reduce_mean(tf.square(tf.subtract(prediction, y)))
-        optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
+    # loss and optimization
+    cost = tf.reduce_mean(tf.square(tf.subtract(prediction, y)))
+    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
 
-        # session
-        init = tf.global_variables_initializer()
-    with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as sess:
+    # session
+    init = tf.global_variables_initializer()
+    with tf.Session() as sess:
         sess.run(init)
         epoch_count = 0
         global_step = 0

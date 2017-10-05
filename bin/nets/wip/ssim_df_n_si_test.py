@@ -147,10 +147,10 @@ def main():
     prediction = conv_net(x, weights, biases)
 
     # get variance to normalize error terms during training
-    variance = get_variance_old(target_data_train)
+    # variance = get_variance_old(target_data_train)
+    variance = np.mean(get_variance(target_data_train))
 
     # loss and optimization
-    # variance = np.mean(get_variance(target_data_train))
     cost = tf.reduce_mean(tf.square(tf.subtract(prediction, y)))
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
 
