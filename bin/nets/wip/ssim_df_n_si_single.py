@@ -6,6 +6,7 @@ np.set_printoptions(threshold=np.nan)
 import tensorflow as tf
 import time
 import pandas as pd
+import matplotlib.pyplot as plt
 
 def convolve_inner_layers(x, W, b):
     y = tf.nn.conv2d(x, W, strides = [1,1,1,1], padding='VALID')
@@ -84,9 +85,9 @@ def main():
     batch_size = 200
     image_dim = 96
     input_layer = 4
-    first_layer = 50
-    second_layer = 25
-    third_layer = 10
+    first_layer = 17
+    second_layer = 9
+    third_layer = 4
     output_layer = 1
     learning_rate = .01
     epochs = 400
@@ -193,6 +194,7 @@ def main():
 
     # session
     init = tf.global_variables_initializer()
+    error_train, error_test = [], []
     with tf.Session() as sess:
         sess.run(init)
         epoch_count = 0
@@ -211,11 +213,18 @@ def main():
                 print("  -  training global_step {0:4d} error: {1:8.4f} {2:8.2f}%".format(global_step, loss, percent_error))
                 global_step += 1
             epoch_count+=1
-        print('optimization finished!')
-        print('\nstarting testing...')
-        score = sess.run(cost, feed_dict={x: single_test_data, y: ssim1})
-        percent_error = 100*score/variance
-        print('---- test score : {:.4f}, {:.4f}% ----'.format(score, percent_error))
+            error_train.append(percent_error)
+            score = sess.run(cost, feed_dict={x: single_test_data, y: ssim1})
+            percent_error = 100*score/variance
+            error_test.append(percent_error)
+            print('---- test score : {:.4f}, {:.4f}% ----'.format(score, percent_error))
+
+    plt.plot(np.arange(len(error_train)), error_train, label='train')
+    plt.plot(np.arange(len(error_test)), error_test, label='test')
+    plt.legend()
+    plt.ylim(0,100)
+    plt.show()
+
 
 if __name__ == '__main__':
     main()
