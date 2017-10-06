@@ -81,7 +81,7 @@ def main():
     # parameters
     filter_dim = 11
     filter_dim2 = 1
-    batch_size = 4
+    batch_size = 200
     image_dim = 96
     input_layer = 4
     first_layer = 50
@@ -89,7 +89,7 @@ def main():
     third_layer = 10
     output_layer = 1
     learning_rate = .01
-    epochs = 10000
+    epochs = 400
 
     # seeding for debug purposes --- dont forget to remove
     # SEED = 12345
@@ -140,25 +140,27 @@ def main():
     test_data =  np.reshape(testing_input_normalized, [test_size,image_dim,image_dim,input_layer])
 
     image_dim = 11
-    single_train_data, single_train_target = [], []
+    single_train_data, single_test_data = [], []
+
     for i in range(train_data.shape[0]):
-        single_train_target.append(target_data_train[i,5,5,0])
         for j in range(11):
             for k in range(11):
                 single_train_data.append(train_data[i,j,k])
+                if i < 140:
+                    single_test_data.append(test_data[i,j,k])
 
     single_train_data = np.reshape(np.asarray(single_train_data), (train_data.shape[0], 11, 11, 4))
-    single_train_target = np.reshape(np.asarray(single_train_target), (train_data.shape[0], 1))
+    single_test_data = np.reshape(np.asarray(single_test_data), (test_data.shape[0], 11, 11, 4))
 
-    ssim = []
+    ssim, ssim1 = [], []
     for i in range(single_train_data.shape[0]):
         ssim.append(calculate_ssim(single_train_data[i][...,0], single_train_data[i][...,1]))
-    ssim = np.asarray(ssim)
+        if i < 140:
+            ssim1.append(calculate_ssim(single_test_data[i][...,0], single_test_data[i][...,1]))
 
-    for i in range(ssim.shape[0]):
-        print(ssim[i]- single_train_target[i][0])
+    ssim = np.reshape(np.asarray(ssim), (single_train_data.shape[0],1))
+    ssim1 = np.reshape(np.asarray(ssim1), (single_test_data.shape[0],1))
 
-    return
     # initializing variables --- fan in
     scaling_factor = 1.0
     initializer = tf.contrib.layers.variance_scaling_initializer(factor=scaling_factor, mode='FAN_IN')
@@ -200,7 +202,7 @@ def main():
         while epoch_count < epochs:
             print('---------------------------------------------------------')
             print('beginning epoch {} ...'.format(epoch_count))
-            epoch = get_epoch(single_train_data, single_train_target, batch_size)
+            epoch = get_epoch(single_train_data, ssim, batch_size)
             for i in epoch:
                 x_data_train, y_data_train = np.asarray(epoch[i][0]), np.asarray(epoch[i][1])
                 sess.run(optimizer, feed_dict={x : x_data_train, y : y_data_train})
@@ -210,11 +212,10 @@ def main():
                 global_step += 1
             epoch_count+=1
         print('optimization finished!')
-        # print('\nstarting testing...')
-        # score = sess.run(cost, feed_dict={x: test_data, y: target_data_test})
-        # percent_error = 100*score/variance
-        # pred = sess.run(prediction, feed_dict={x: test_data})
-        # print('---- test score : {:.4f}, {:.4f}% ----'.format(score, percent_error))
+        print('\nstarting testing...')
+        score = sess.run(cost, feed_dict={x: single_test_data, y: ssim1})
+        percent_error = 100*score/variance
+        print('---- test score : {:.4f}, {:.4f}% ----'.format(score, percent_error))
 
 if __name__ == '__main__':
     main()

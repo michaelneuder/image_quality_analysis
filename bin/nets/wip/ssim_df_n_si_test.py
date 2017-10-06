@@ -84,10 +84,10 @@ def main():
     # train/test images
     orig_500 = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/orig_500.txt', header=None, delim_whitespace = True)
     recon_500 = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/recon_500.txt', header=None, delim_whitespace = True)
-    SSIM_500 = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/SSIM_500.txt', header=None, delim_whitespace = True)
+    SSIM_500 = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/comp_500.txt', header=None, delim_whitespace = True)
     orig_140 = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/orig_140.txt', header=None, delim_whitespace = True)
     recon_140 = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/recon_140.txt', header=None, delim_whitespace = True)
-    SSIM_140 = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/SSIM_140.txt', header=None, delim_whitespace = True)
+    SSIM_140 = pd.read_csv('https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/comp_140.txt', header=None, delim_whitespace = True)
 
     # getting 4 input channels for train and test
     original_images_train = orig_500.values
@@ -147,8 +147,8 @@ def main():
     prediction = conv_net(x, weights, biases)
 
     # get variance to normalize error terms during training
-    # variance = get_variance_old(target_data_train)
-    variance = np.mean(get_variance(target_data_train))
+    variance = get_variance_old(target_data_train)
+    # variance = np.mean(get_variance(target_data_train))
 
     # loss and optimization
     cost = tf.reduce_mean(tf.square(tf.subtract(prediction, y)))
