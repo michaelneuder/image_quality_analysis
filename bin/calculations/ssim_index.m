@@ -84,12 +84,13 @@ if (size(img1) ~= size(img2))
    return;
 end
 
-[M N] = size(img1);
+[L M N] = size(img1);
 
 if (nargin == 2)
    if ((M < 11) || (N < 11))
 	   ssim_index = -Inf;
 	   ssim_map = -Inf;
+       mssim = -Inf;
       return
    end
    window = fspecial('gaussian', 11, 1.5);	%
@@ -145,6 +146,7 @@ if (nargin == 5)
    if ((H*W) < 4 || (H > M) || (W > N))
 	   ssim_index = -Inf;
 	   ssim_map = -Inf;
+       mssim = -Inf;
       return
    end
    if (length(K) == 2)
