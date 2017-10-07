@@ -84,7 +84,7 @@ if (size(img1) ~= size(img2))
    return;
 end
 
-[L M N] = size(img1);
+[M N] = size(img1);
 
 if (nargin == 2)
    if ((M < 11) || (N < 11))
