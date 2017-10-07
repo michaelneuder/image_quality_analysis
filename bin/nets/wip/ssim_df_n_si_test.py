@@ -8,12 +8,12 @@ import time
 import pandas as pd
 
 def convolve_inner_layers(x, W, b):
-    y = tf.nn.conv2d(x, W, strides = [1,1,1,1], padding='SAME')
+    y = tf.nn.conv2d(x, W, strides = [1,1,1,1], padding='VALID')
     y = tf.nn.bias_add(y, b)
     return tf.nn.tanh(y)
 
 def convolve_ouput_layer(x, W, b):
-    y = tf.nn.conv2d(x, W, strides = [1,1,1,1], padding='SAME')
+    y = tf.nn.conv2d(x, W, strides = [1,1,1,1], padding='VALID')
     y = tf.nn.bias_add(y, b)
     return y
 
@@ -67,10 +67,11 @@ def main():
     filter_dim2 = 1
     batch_size = 4
     image_dim = 96
+    result_dim = 86
     input_layer = 4
-    first_layer = 30
-    second_layer = 30
-    third_layer = 30
+    first_layer = 17
+    second_layer = 9
+    third_layer = 4
     output_layer = 1
     learning_rate = .01
     epochs = 10000
