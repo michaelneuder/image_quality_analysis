@@ -80,10 +80,10 @@ def get_epoch(x, y, n):
 
 
 filter_dim, filter_dim2 = 11, 1
-batch_size = 4
+batch_size = 500
 image_dim, result_dim = 96, 86
 input_layer, first_layer, second_layer, third_layer, output_layer = 4, 17, 9, 4, 1
-learning_rate = .01
+learning_rate = .0001
 epochs = 1000
 
 data_path = 'https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/'
