@@ -78,110 +78,133 @@ def get_epoch(x, y, n):
         batches[i+1] = [np.asarray(temp_x), np.asarray(temp_y)]
     return batches
 
+def main():
+    # parameters
+    filter_dim, filter_dim2 = 11, 1
+    batch_size = 4
+    image_dim, result_dim = 96, 86
+    input_layer, first_layer, second_layer, third_layer, output_layer = 4, 17, 9, 4, 1
+    learning_rate = .01
+    epochs = 1000
 
-filter_dim, filter_dim2 = 11, 1
-batch_size = 500
-image_dim, result_dim = 96, 86
-input_layer, first_layer, second_layer, third_layer, output_layer = 4, 17, 9, 4, 1
-learning_rate = .0001
-epochs = 1000
+    # data input
+    data_path = 'https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/'
 
-data_path = 'https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/'
+    # train data --- 500 images, 96x96 pixels
+    orig_500 = pd.read_csv('{}orig_500.txt'.format(data_path), header=None, delim_whitespace = True)
+    recon_500 = pd.read_csv('{}recon_500.txt'.format(data_path), header=None, delim_whitespace = True)
 
-# train data --- 500 images, 96x96 pixels
-orig_500 = pd.read_csv('{}orig_500.txt'.format(data_path), header=None, delim_whitespace = True)
-recon_500 = pd.read_csv('{}recon_500.txt'.format(data_path), header=None, delim_whitespace = True)
+    # test data --- 140 images, 96x96 pixels
+    orig_140 = pd.read_csv('{}orig_140.txt'.format(data_path), header=None, delim_whitespace = True)
+    recon_140 = pd.read_csv('{}recon_140.txt'.format(data_path), header=None, delim_whitespace = True)
 
-# test data --- 140 images, 96x96 pixels
-orig_140 = pd.read_csv('{}orig_140.txt'.format(data_path), header=None, delim_whitespace = True)
-recon_140 = pd.read_csv('{}recon_140.txt'.format(data_path), header=None, delim_whitespace = True)
+    # train target --- 500 images, 86x86 pixels (dimension reduction due no zero padding being used)
+    ssim_500 = pd.read_csv('{}ssim_500_new.csv'.format(data_path), header=None)
+    ssim_140 = pd.read_csv('{}ssim_140_new.csv'.format(data_path), header=None)
 
-# train target --- 500 images, 86x86 pixels (dimension reduction due no zero padding being used)
-ssim_500 = pd.read_csv('{}ssim_500_new.csv'.format(data_path), header=None)
-ssim_140 = pd.read_csv('{}ssim_140_new.csv'.format(data_path), header=None)
+    # getting 4 input channels for train and test --- (orig, recon, orig squared, recon squared)
+    original_images_train = orig_500.values
+    original_images_train_sq = orig_500.values**2
+    reconstructed_images_train = recon_500.values
+    reconstructed_images_train_sq = recon_500.values**2
 
-# getting 4 input channels for train and test --- (orig, recon, orig squared, recon squared)
-original_images_train = orig_500.values
-original_images_train_sq = orig_500.values**2
-reconstructed_images_train = recon_500.values
-reconstructed_images_train_sq = recon_500.values**2
+    original_images_test = orig_140.values
+    original_images_test_sq = orig_140.values**2
+    reconstructed_images_test = recon_140.values
+    reconstructed_images_test_sq = recon_140.values**2
 
-original_images_test = orig_140.values
-original_images_test_sq = orig_140.values**2
-reconstructed_images_test = recon_140.values
-reconstructed_images_test_sq = recon_140.values**2
+    # stack inputs
+    training_input = np.dstack((original_images_train, reconstructed_images_train, original_images_train_sq, reconstructed_images_train_sq))
+    testing_input = np.dstack((original_images_test, reconstructed_images_test, original_images_test_sq, reconstructed_images_test_sq))
 
-# stack inputs
-training_input = np.dstack((original_images_train, reconstructed_images_train, original_images_train_sq, reconstructed_images_train_sq))
-testing_input = np.dstack((original_images_test, reconstructed_images_test, original_images_test_sq, reconstructed_images_test_sq))
+    # normalize inputs
+    training_input_normalized, testing_input_normalized = normalize_input(training_input, testing_input)
 
-# normalize inputs
-training_input_normalized, testing_input_normalized = normalize_input(training_input, testing_input)
+    # target values
+    training_target = ssim_500.values
+    testing_target = ssim_140.values
 
-# target values
-training_target = ssim_500.values
-testing_target = ssim_140.values
+    # get size of training and testing set
+    train_size = original_images_train.shape[0]
+    test_size = original_images_test.shape[0]
 
-# get size of training and testing set
-train_size = original_images_train.shape[0]
-test_size = original_images_test.shape[0]
+    # reshaping features to (num images, 96x96, 4 channels)
+    train_features = np.reshape(training_input_normalized, [train_size,image_dim,image_dim,input_layer])
+    test_features =  np.reshape(testing_input_normalized, [test_size,image_dim,image_dim,input_layer])
 
-# reshaping features to (num images, 96x96, 4 channels)
-train_features = np.reshape(training_input_normalized, [train_size,image_dim,image_dim,input_layer])
-test_features =  np.reshape(testing_input_normalized, [test_size,image_dim,image_dim,input_layer])
+    # reshaping target to --- (num images, 86x86, 1)
+    train_target = np.reshape(training_target, [train_size, result_dim, result_dim, output_layer])
+    test_target = np.reshape(testing_target, [test_size, result_dim, result_dim, output_layer])
 
-# reshaping target to --- (num images, 86x86, 1)
-train_target = np.reshape(training_target, [train_size, result_dim, result_dim, output_layer])
-test_target = np.reshape(testing_target, [test_size, result_dim, result_dim, output_layer])
+    # inverse
+    train_features = -1*train_features
+    test_features = -1*test_features
 
-# initializing filters, this is what we are trying to learn --- fan in
-scaling_factor = 1.0
-initializer = tf.contrib.layers.variance_scaling_initializer(factor=scaling_factor, mode='FAN_IN')
-weights = {
-    'weights1': tf.get_variable('weights1', [filter_dim,filter_dim,input_layer,first_layer], initializer=initializer),
-    'weights2': tf.get_variable('weights2', [filter_dim2,filter_dim2,first_layer,second_layer], initializer=initializer),
-    'weights3': tf.get_variable('weights3', [filter_dim2,filter_dim2,second_layer,third_layer], initializer=initializer),
-    'weights_out': tf.get_variable('weights4', [filter_dim2,filter_dim2,third_layer+second_layer+first_layer,output_layer], initializer=initializer)
-}
-biases = {
-    'bias1': tf.get_variable('bias1', [first_layer], initializer=initializer),
-    'bias2': tf.get_variable('bias2', [second_layer], initializer=initializer),
-    'bias3': tf.get_variable('bias3', [third_layer], initializer=initializer),
-    'bias_out': tf.get_variable('bias4', [output_layer], initializer=initializer)
-}
+    # initializing filters, this is what we are trying to learn --- fan in
+    scaling_factor = 1.0
+    initializer = tf.contrib.layers.variance_scaling_initializer(factor=scaling_factor, mode='FAN_IN')
+    weights = {
+        'weights1': tf.get_variable('weights1', [filter_dim,filter_dim,input_layer,first_layer], initializer=initializer),
+        'weights2': tf.get_variable('weights2', [filter_dim2,filter_dim2,first_layer,second_layer], initializer=initializer),
+        'weights3': tf.get_variable('weights3', [filter_dim2,filter_dim2,second_layer,third_layer], initializer=initializer),
+        'weights_out': tf.get_variable('weights4', [filter_dim2,filter_dim2,third_layer+second_layer+first_layer,output_layer], initializer=initializer)
+    }
+    biases = {
+        'bias1': tf.get_variable('bias1', [first_layer], initializer=initializer),
+        'bias2': tf.get_variable('bias2', [second_layer], initializer=initializer),
+        'bias3': tf.get_variable('bias3', [third_layer], initializer=initializer),
+        'bias_out': tf.get_variable('bias4', [output_layer], initializer=initializer)
+    }
 
-# tensorflow setup
-x = tf.placeholder(tf.float32, [None, image_dim, image_dim, input_layer])
-y = tf.placeholder(tf.float32, [None, result_dim, result_dim, output_layer])
+    # tensorflow setup
+    x = tf.placeholder(tf.float32, [None, image_dim, image_dim, input_layer])
+    y = tf.placeholder(tf.float32, [None, result_dim, result_dim, output_layer])
 
-# model
-prediction = conv_net(x, weights, biases)
+    # model
+    prediction = conv_net(x, weights, biases)
 
-# get variance to normalize error terms during training
-variance = get_variance(train_target)
+    # get variance to normalize error terms during training
+    variance = get_variance(train_target)
 
-# loss and optimization
-cost = tf.reduce_mean(tf.square(tf.subtract(prediction, y)))
-optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
-init = tf.global_variables_initializer()
+    # loss and optimization
+    cost = tf.reduce_mean(tf.square(tf.subtract(prediction, y)))
+    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
+    init = tf.global_variables_initializer()
 
-# error arrays
-training_error, testing_error = [], []
+    # error arrays
+    training_error, testing_error = [], []
+    epoch_time = np.asarray([])
 
-# tensorflow session & training
-with tf.Session() as sess:
-    sess.run(init)
-    epoch_count = -1
-    for epoch in range(epochs):
-        epoch_count += 1
-        epoch = get_epoch(train_features, train_target, batch_size)
-        for i in epoch:
-            x_data_train, y_data_train = np.asarray(epoch[i][0]), np.asarray(epoch[i][1])
-            sess.run(optimizer, feed_dict={x : x_data_train, y : y_data_train})
-            train_loss = sess.run(cost, feed_dict={x : x_data_train, y : y_data_train})
-            print('current train error: {:.4f}'.format(100*train_loss/variance))
-        training_error.append(100*train_loss/variance)
-        test_loss = sess.run(cost, feed_dict={x : test_features, y : test_target})
-        testing_error.append(100*test_loss/variance)
-        print(' ----- ----- ----- end of epoch {} ----- ----- -----'.format(epoch_count))
-        print('current test error: {:.4f}'.format(100*test_loss/variance))
+    # tensorflow session & training
+    with tf.Session() as sess:
+        sess.run(init)
+        global_start_time = time.time()
+        epoch_count = -1
+        for epoch in range(epochs):
+            epoch_count += 1
+            start_time = time.time()
+            epoch = get_epoch(train_features, train_target, batch_size)
+            for i in epoch:
+                x_data_train, y_data_train = np.asarray(epoch[i][0]), np.asarray(epoch[i][1])
+                sess.run(optimizer, feed_dict={x : x_data_train, y : y_data_train})
+                train_loss = sess.run(cost, feed_dict={x : x_data_train, y : y_data_train})
+            training_error.append(100*train_loss/variance)
+            test_loss = sess.run(cost, feed_dict={x : test_features, y : test_target})
+            testing_error.append(100*test_loss/variance)
+            end_time = time.time()
+            epoch_time = np.append(epoch_time, end_time-start_time)
+            print('current epoch: {} -- '.format(epoch_count)
+                  +'current train error: {:.4f} -- '.format(100*train_loss/variance)
+                  +'average epoch time: {:.4}s '.format(epoch_time.mean()), end='\r')
+
+    f, axarr = plt.subplots(nrows=1, ncols=1, figsize=(9,6))
+    axarr.plot(np.arange(len(training_error)), training_error, label='train')
+    axarr.plot(np.arange(len(testing_error)), testing_error, label='test')
+    axarr.legend()
+    axarr.set_ylim(0,100)
+    plt.savefig('test.png')
+
+
+
+if __name__ == '__main__':
+    main()
