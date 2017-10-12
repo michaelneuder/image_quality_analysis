@@ -2,10 +2,12 @@
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 import tensorflow as tf
-import matplotlib.pyplot as plt
+import matplotlib as mpl
 import pandas as pd
 import numpy as np
+mpl.use('Agg')
 import time
+import matplotlib.pyplot as plt
 
 def convolve_inner_layers(x, W, b):
     '''
@@ -85,7 +87,7 @@ def main():
     image_dim, result_dim = 96, 86
     input_layer, first_layer, second_layer, third_layer, output_layer = 4, 17, 9, 4, 1
     learning_rate = .01
-    epochs = 1000
+    epochs = 5000
 
     # data input
     data_path = 'https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/'
