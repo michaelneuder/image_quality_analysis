@@ -85,7 +85,7 @@ def main():
     filter_dim, filter_dim2 = 11, 1
     batch_size = 4
     image_dim, result_dim = 96, 86
-    input_layer, first_layer, second_layer, third_layer, output_layer = 4, 17, 9, 4, 1
+    input_layer, first_layer, second_layer, third_layer, output_layer = 4, 50, 25, 10, 1
     learning_rate = .01
     epochs = 5000
 
@@ -204,9 +204,7 @@ def main():
     axarr.plot(np.arange(len(testing_error)), testing_error, label='test')
     axarr.legend()
     axarr.set_ylim(0,100)
-    plt.savefig('test.png')
-
-
+    plt.savefig('test1.png')
 
 if __name__ == '__main__':
     main()
