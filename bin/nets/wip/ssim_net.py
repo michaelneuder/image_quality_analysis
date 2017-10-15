@@ -81,13 +81,15 @@ def get_epoch(x, y, n):
     return batches
 
 def main():
+    print('welcome to ssim net.')
+
     # parameters
     filter_dim, filter_dim2 = 11, 1
     batch_size = 4
     image_dim, result_dim = 96, 86
-    input_layer, first_layer, second_layer, third_layer, output_layer = 4, 50, 25, 10, 1
-    learning_rate = .01
-    epochs = 5000
+    input_layer, first_layer, second_layer, third_layer, output_layer = 4, 100, 50, 25, 1
+    learning_rate = .001
+    epochs = 2500
 
     # data input
     data_path = 'https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/'
@@ -103,6 +105,8 @@ def main():
     # train target --- 500 images, 86x86 pixels (dimension reduction due no zero padding being used)
     ssim_500 = pd.read_csv('{}ssim_500_new.csv'.format(data_path), header=None)
     ssim_140 = pd.read_csv('{}ssim_140_new.csv'.format(data_path), header=None)
+
+    print('images loaded...')
 
     # getting 4 input channels for train and test --- (orig, recon, orig squared, recon squared)
     original_images_train = orig_500.values
@@ -137,10 +141,6 @@ def main():
     # reshaping target to --- (num images, 86x86, 1)
     train_target = np.reshape(training_target, [train_size, result_dim, result_dim, output_layer])
     test_target = np.reshape(testing_target, [test_size, result_dim, result_dim, output_layer])
-
-    # inverse
-    train_features = -1*train_features
-    test_features = -1*test_features
 
     # initializing filters, this is what we are trying to learn --- fan in
     scaling_factor = 1.0
@@ -181,9 +181,8 @@ def main():
     with tf.Session() as sess:
         sess.run(init)
         global_start_time = time.time()
-        epoch_count = -1
-        for epoch in range(epochs):
-            epoch_count += 1
+        print('starting training...')
+        for epoch_count in range(epochs):
             start_time = time.time()
             epoch = get_epoch(train_features, train_target, batch_size)
             for i in epoch:
@@ -197,14 +196,23 @@ def main():
             epoch_time = np.append(epoch_time, end_time-start_time)
             print('current epoch: {} -- '.format(epoch_count)
                   +'current train error: {:.4f} -- '.format(100*train_loss/variance)
-                  +'average epoch time: {:.4}s '.format(epoch_time.mean()), end='\r')
+                  +'average epoch time: {:.4}s '.format(epoch_time.mean()))
+
+            f, axarr = plt.subplots(nrows=1, ncols=1, figsize=(9,6))
+            axarr.plot(np.arange(epoch_count+1), training_error, label='train')
+            axarr.plot(np.arange(epoch_count+1), testing_error, label='test')
+            axarr.legend()
+            axarr.set_ylim(0,100)
+            plt.savefig('errors.png')
+
+    print('training finished.')
 
     f, axarr = plt.subplots(nrows=1, ncols=1, figsize=(9,6))
     axarr.plot(np.arange(len(training_error)), training_error, label='train')
     axarr.plot(np.arange(len(testing_error)), testing_error, label='test')
     axarr.legend()
     axarr.set_ylim(0,100)
-    plt.savefig('test1.png')
+    plt.savefig('test2.png')
 
 if __name__ == '__main__':
     main()
