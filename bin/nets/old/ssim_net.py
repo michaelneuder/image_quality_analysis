@@ -87,7 +87,7 @@ def main():
     filter_dim, filter_dim2 = 11, 1
     batch_size = 1
     image_dim, result_dim = 96, 86
-    input_layer, first_layer, second_layer, third_layer, output_layer = 4, 100, 50, 25, 1
+    input_layer, first_layer, second_layer, third_layer, output_layer = 4, 200, 100, 50, 1
     learning_rate = .001
     epochs = 2500
 
@@ -103,8 +103,8 @@ def main():
     recon_140 = pd.read_csv('{}recon_140.txt'.format(data_path), header=None, delim_whitespace = True)
 
     # train target --- 500 images, 86x86 pixels (dimension reduction due no zero padding being used)
-    ssim_500 = pd.read_csv('{}ssim_500_nogauss.csv'.format(data_path), header=None)
-    ssim_140 = pd.read_csv('{}ssim_140_nogauss.csv'.format(data_path), header=None)
+    ssim_500 = pd.read_csv('{}ssim_500_new.csv'.format(data_path), header=None)
+    ssim_140 = pd.read_csv('{}ssim_140_new.csv'.format(data_path), header=None)
 
     print('images loaded...')
 
@@ -203,7 +203,7 @@ def main():
             axarr.plot(np.arange(epoch_count+1), testing_error, label='test')
             axarr.legend()
             axarr.set_ylim(0,100)
-            plt.savefig('errors_nogauss.png')
+            plt.savefig('errors_one_batch.png')
 
     print('training finished.')
 
@@ -212,7 +212,7 @@ def main():
     axarr.plot(np.arange(len(testing_error)), testing_error, label='test')
     axarr.legend()
     axarr.set_ylim(0,100)
-    plt.savefig('errors_nogauss_final.png')
+    plt.savefig('test_2.png')
 
 if __name__ == '__main__':
     main()
