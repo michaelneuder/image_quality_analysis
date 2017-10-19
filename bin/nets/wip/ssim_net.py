@@ -85,7 +85,7 @@ def main():
 
     # parameters
     filter_dim, filter_dim2 = 11, 1
-    batch_size = 4
+    batch_size = 1
     image_dim, result_dim = 96, 86
     input_layer, first_layer, second_layer, third_layer, output_layer = 4, 200, 100, 50, 1
     learning_rate = .001
@@ -203,7 +203,7 @@ def main():
             axarr.plot(np.arange(epoch_count+1), testing_error, label='test')
             axarr.legend()
             axarr.set_ylim(0,100)
-            plt.savefig('errors_200.png')
+            plt.savefig('errors_one_batch.png')
 
     print('training finished.')
 
@@ -212,7 +212,7 @@ def main():
     axarr.plot(np.arange(len(testing_error)), testing_error, label='test')
     axarr.legend()
     axarr.set_ylim(0,100)
-    plt.savefig('test2.png')
+    plt.savefig('test_2.png')
 
 if __name__ == '__main__':
     main()

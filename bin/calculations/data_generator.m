@@ -12,7 +12,7 @@ recon = recon(1:140,1:9216);
 image_dim = 96;
 ssim = zeros(140,86,86);
 K = [0.01 0.03];
-window = ones(11);
+window = ones(11)/121.;
 L = 1255;
 
 % reshape array
@@ -23,7 +23,7 @@ recon = reshape(recon,[140, image_dim, image_dim]);
 for i=1:140
     orig_temp = reshape(orig(i,:,:),[image_dim, image_dim]);
     recon_temp = reshape(recon(i,:,:),[image_dim, image_dim]);
-    [mssim, ssim_map] = ssim_index(orig_temp, recon_temp);
+    [mssim, ssim_map] = ssim_index(orig_temp, recon_temp, K, window);
     ssim(i,:,:) = ssim_map;
 end
 
