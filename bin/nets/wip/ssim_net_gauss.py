@@ -103,8 +103,8 @@ def main():
     recon_140 = pd.read_csv('{}recon_140.txt'.format(data_path), header=None, delim_whitespace = True)
 
     # train target --- 500 images, 86x86 pixels (dimension reduction due no zero padding being used)
-    ssim_500 = pd.read_csv('{}ssim_500_nogauss.csv'.format(data_path), header=None)
-    ssim_140 = pd.read_csv('{}ssim_140_nogauss.csv'.format(data_path), header=None)
+    ssim_500 = pd.read_csv('{}ssim_500_new.csv'.format(data_path), header=None)
+    ssim_140 = pd.read_csv('{}ssim_140_new.csv'.format(data_path), header=None)
 
     print('images loaded...')
 
@@ -203,7 +203,7 @@ def main():
             axarr.plot(np.arange(epoch_count+1), testing_error, label='test')
             axarr.legend()
             axarr.set_ylim(0,100)
-            plt.savefig('errors_nogauss.png')
+            plt.savefig('errors_gauss.png')
 
     print('training finished.')
 
@@ -212,7 +212,7 @@ def main():
     axarr.plot(np.arange(len(testing_error)), testing_error, label='test')
     axarr.legend()
     axarr.set_ylim(0,100)
-    plt.savefig('errors_nogauss_final.png')
+    plt.savefig('errors_gauss_final.png')
 
 if __name__ == '__main__':
     main()
