@@ -15,7 +15,7 @@ def convolve_inner_layers(x, W, b):
     '''
     y = tf.nn.conv2d(x, W, strides = [1,1,1,1], padding='VALID')
     y = tf.nn.bias_add(y, b)
-    return tf.nn.tanh(y)
+    return tf.nn.relu(y)
 
 def convolve_ouput_layer(x, W, b):
     '''
@@ -203,7 +203,7 @@ def main():
             axarr.plot(np.arange(epoch_count+1), testing_error, label='test')
             axarr.legend()
             axarr.set_ylim(0,100)
-            plt.savefig('errors_215_relu.png')
+            plt.savefig('errors_relu.png')
 
     print('training finished.')
 
