@@ -32,7 +32,8 @@ def conv_net(x, W, b):
     conv1 = convolve_inner_layers(x, W['weights1'], b['bias1'])
     conv2 = convolve_inner_layers(conv1, W['weights2'], b['bias2'])
     conv3 = convolve_inner_layers(conv2, W['weights3'], b['bias3'])
-    output_feed = tf.concat([conv1, conv2, conv3],3)
+    conv4 = convolve_inner_layers(conv3, W['weights4'], b['bias4'])
+    output_feed = tf.concat([conv1, conv2, conv3, conv4],3)
     output = convolve_ouput_layer(output_feed, W['weights_out'], b['bias_out'])
     return output
 
@@ -87,7 +88,7 @@ def main():
     filter_dim, filter_dim2 = 11, 1
     batch_size = 4
     image_dim, result_dim = 96, 86
-    input_layer, first_layer, second_layer, third_layer, output_layer = 4, 200, 100, 50, 1
+    input_layer, first_layer, second_layer, third_layer, fourth_layer, output_layer = 4, 100, 50, 25, 10, 1
     learning_rate = .001
     epochs = 2500
 
@@ -149,13 +150,15 @@ def main():
         'weights1': tf.get_variable('weights1', [filter_dim,filter_dim,input_layer,first_layer], initializer=initializer),
         'weights2': tf.get_variable('weights2', [filter_dim2,filter_dim2,first_layer,second_layer], initializer=initializer),
         'weights3': tf.get_variable('weights3', [filter_dim2,filter_dim2,second_layer,third_layer], initializer=initializer),
-        'weights_out': tf.get_variable('weights4', [filter_dim2,filter_dim2,third_layer+second_layer+first_layer,output_layer], initializer=initializer)
+        'weights4': tf.get_variable('weights4', [filter_dim2,filter_dim2,third_layer,fourth_layer], initializer=initializer),
+        'weights_out': tf.get_variable('weights_out', [filter_dim2,filter_dim2,fourth_layer+third_layer+second_layer+first_layer,output_layer], initializer=initializer)
     }
     biases = {
         'bias1': tf.get_variable('bias1', [first_layer], initializer=initializer),
         'bias2': tf.get_variable('bias2', [second_layer], initializer=initializer),
         'bias3': tf.get_variable('bias3', [third_layer], initializer=initializer),
-        'bias_out': tf.get_variable('bias4', [output_layer], initializer=initializer)
+        'bias4': tf.get_variable('bias4', [fourth_layer], initializer=initializer),
+        'bias_out': tf.get_variable('bias_out', [output_layer], initializer=initializer)
     }
 
     # tensorflow setup
@@ -203,7 +206,7 @@ def main():
             axarr.plot(np.arange(epoch_count+1), testing_error, label='test')
             axarr.legend()
             axarr.set_ylim(0,100)
-            plt.savefig('errors_relu.png')
+            plt.savefig('relu_1521.png')
 
     print('training finished.')
 
