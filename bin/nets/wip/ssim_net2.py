@@ -88,9 +88,9 @@ def main():
     filter_dim, filter_dim2 = 11, 1
     batch_size = 4
     image_dim, result_dim = 96, 86
-    input_layer, first_layer, second_layer, third_layer, fourth_layer, output_layer = 4, 100, 50, 25, 10, 1
+    input_layer, first_layer, second_layer, third_layer, fourth_layer, output_layer = 4, 200, 100, 50, 25, 1
     learning_rate = .001
-    epochs = 2500
+    epochs = 5000
 
     # data input
     data_path = 'https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/'
@@ -206,7 +206,7 @@ def main():
             axarr.plot(np.arange(epoch_count+1), testing_error, label='test')
             axarr.legend()
             axarr.set_ylim(0,100)
-            plt.savefig('relu_1521.png')
+            plt.savefig('relu_2152.png')
 
     print('training finished.')
 
