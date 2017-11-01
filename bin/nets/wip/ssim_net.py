@@ -87,7 +87,7 @@ def main():
     filter_dim, filter_dim2 = 11, 1
     batch_size = 4
     image_dim, result_dim = 96, 86
-    input_layer, first_layer, second_layer, third_layer, output_layer = 4, 100, 100, 100, 1
+    input_layer, first_layer, second_layer, third_layer, output_layer = 4, 100, 50, 25, 1
     learning_rate = .001
     epochs = 2500
 
@@ -144,7 +144,7 @@ def main():
 
     # initializing filters, this is what we are trying to learn --- fan in
     scaling_factor = 0.1
-    initializer = tf.contrib.layers.variance_scaling_initializer(factor=scaling_factor, mode='FAN_IN')
+    initializer = tf.contrib.layers.xavier_initializer()
     weights = {
         'weights1': tf.get_variable('weights1', [filter_dim,filter_dim,input_layer,first_layer], initializer=initializer),
         'weights2': tf.get_variable('weights2', [filter_dim2,filter_dim2,first_layer,second_layer], initializer=initializer),
@@ -203,7 +203,7 @@ def main():
             axarr.plot(np.arange(epoch_count+1), testing_error, label='test')
             axarr.legend()
             axarr.set_ylim(0,100)
-            plt.savefig('relu_111_-1.png')
+            plt.savefig('relu_152_x.png')
 
     print('training finished.')
 
