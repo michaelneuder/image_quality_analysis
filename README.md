@@ -8,5 +8,8 @@ below are a couple pictures to peek your curiosity. a more complete write up of 
 
 <p align="center">
   <img src="https://github.com/michaelneuder/image_quality_analysis/blob/master/img/compare_ssim.png"/>
+  <img src="https://github.com/michaelneuder/image_quality_analysis/blob/master/img/single_patch.png"/>
+  <img src="https://github.com/michaelneuder/image_quality_analysis/blob/master/img/human_pref.png"/>
+  <img src="https://github.com/michaelneuder/image_quality_analysis/blob/master/img/human_judge2.png"/>
   <img src="https://github.com/michaelneuder/image_quality_analysis/blob/master/img/down_sample.png"/>
 </p>
