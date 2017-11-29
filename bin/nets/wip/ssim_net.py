@@ -173,9 +173,14 @@ def main():
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
     init = tf.global_variables_initializer()
 
+    print(tf.subtract(prediction, y))
+    print(tf.square(tf.subtract(prediction, y)))
+
     # error arrays
     training_error, testing_error = [], []
     epoch_time = np.asarray([])
+
+    exit()
 
     # tensorflow session & training
     with tf.Session() as sess:
@@ -198,12 +203,12 @@ def main():
                   +'current train error: {:.4f} -- '.format(100*train_loss/variance)
                   +'average epoch time: {:.4}s '.format(epoch_time.mean()))
 
-            f, axarr = plt.subplots(nrows=1, ncols=1, figsize=(9,6))
-            axarr.plot(np.arange(epoch_count+1), training_error, label='train')
-            axarr.plot(np.arange(epoch_count+1), testing_error, label='test')
-            axarr.legend()
-            axarr.set_ylim(0,100)
-            plt.savefig('relu_152_x.png')
+            # f, axarr = plt.subplots(nrows=1, ncols=1, figsize=(9,6))
+            # axarr.plot(np.arange(epoch_count+1), training_error, label='train')
+            # axarr.plot(np.arange(epoch_count+1), testing_error, label='test')
+            # axarr.legend()
+            # axarr.set_ylim(0,100)
+            # plt.savefig('relu_152_x.png')
 
     print('training finished.')
 
