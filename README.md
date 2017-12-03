@@ -14,4 +14,5 @@ below are a couple pictures to peek your curiosity. a more complete write up of 
   <img src="https://github.com/michaelneuder/image_quality_analysis/blob/master/img/human_judge2.png"/>
   <img src="https://github.com/michaelneuder/image_quality_analysis/blob/master/img/down_sample.png"/>
   <img src="https://github.com/michaelneuder/image_quality_analysis/blob/master/img/contrast_structure_data_sample.png"/>
+   <img src="https://github.com/michaelneuder/image_quality_analysis/blob/master/img/contrast_structure_data_sample_red1.png"/>
 </p>
