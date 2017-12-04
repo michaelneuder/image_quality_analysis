@@ -87,7 +87,7 @@ def main():
     # parameters
     filter_dim, filter_dim2 = 11, 1
     batch_size = 4
-    image_dim, result_dim = 96, 86
+    image_dim, result_dim = 24, 14
     input_layer, first_layer, second_layer, third_layer, fourth_layer, output_layer = 4, 100, 50, 25, 10, 1
     learning_rate = .0001
     epochs = 5000
@@ -96,12 +96,12 @@ def main():
     data_path = 'https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/'
 
     # train data --- 500 images, 96x96 pixels
-    orig_500 = pd.read_csv('{}ds2_orig_500.txt'.format(data_path), header=None, delim_whitespace = True)
-    recon_500 = pd.read_csv('{}ds2_recon_500.txt'.format(data_path), header=None, delim_whitespace = True)
+    orig_500 = pd.read_csv('{}ds2_orig_500.csv'.format(data_path), header=None)
+    recon_500 = pd.read_csv('{}ds2_recon_500.csv'.format(data_path), header=None)
 
     # test data --- 140 images, 96x96 pixels
-    orig_140 = pd.read_csv('{}ds2_orig_140.txt'.format(data_path), header=None, delim_whitespace = True)
-    recon_140 = pd.read_csv('{}ds2_recon_140.txt'.format(data_path), header=None, delim_whitespace = True)
+    orig_140 = pd.read_csv('{}ds2_orig_140.csv'.format(data_path), header=None)
+    recon_140 = pd.read_csv('{}ds2_recon_140.csv'.format(data_path), header=None)
 
     # train target --- 500 images, 86x86 pixels (dimension reduction due no zero padding being used)
     luminance_500= pd.read_csv('{}luminance_500.csv'.format(data_path), header=None)
