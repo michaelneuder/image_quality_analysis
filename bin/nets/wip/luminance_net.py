@@ -96,12 +96,12 @@ def main():
     data_path = 'https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/'
 
     # train data --- 500 images, 96x96 pixels
-    orig_500 = pd.read_csv('{}ds2_orig_500.csv'.format(data_path), header=None)
-    recon_500 = pd.read_csv('{}ds2_recon_500.csv'.format(data_path), header=None)
+    orig_500 = pd.read_csv('{}orig_500.csv'.format(data_path), header=None)
+    recon_500 = pd.read_csv('{}recon_500.csv'.format(data_path), header=None)
 
     # test data --- 140 images, 96x96 pixels
-    orig_140 = pd.read_csv('{}ds2_orig_140.csv'.format(data_path), header=None)
-    recon_140 = pd.read_csv('{}ds2_recon_140.csv'.format(data_path), header=None)
+    orig_140 = pd.read_csv('{}orig_140.csv'.format(data_path), header=None)
+    recon_140 = pd.read_csv('{}recon_140.csv'.format(data_path), header=None)
 
     # train target --- 500 images, 86x86 pixels (dimension reduction due no zero padding being used)
     luminance_500= pd.read_csv('{}luminance_500.csv'.format(data_path), header=None)
