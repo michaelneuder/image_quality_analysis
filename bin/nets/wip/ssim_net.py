@@ -33,7 +33,10 @@ def conv_net(x, W, b):
     conv2 = convolve_inner_layers(conv1, W['weights2'], b['bias2'])
     conv3 = convolve_inner_layers(conv2, W['weights3'], b['bias3'])
     output_feed = tf.concat([conv1, conv2, conv3],3)
+    print(conv1,conv2,conv3)
+    print(output_feed)
     output = convolve_ouput_layer(output_feed, W['weights_out'], b['bias_out'])
+    print(output)
     return output
 
 def get_variance(training_target):
