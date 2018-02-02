@@ -50,3 +50,34 @@ def get_epoch(x, y, n):
             temp_y.append(y[k])
         batches[i+1] = [np.asarray(temp_x), np.asarray(temp_y)]
     return batches
+
+def calculate_ssim_patch(window_orig, window_recon):
+    '''
+    calculates the ssim value of two 11x11 patches.
+    '''
+    k_1, k_2, L = 0.01, 0.03, 255
+    if window_orig.shape != (11,11) or window_recon.shape != (11,11):
+        raise ValueError('please check window size for SSIM calculation!')
+    orig_data, recon_data = window_orig.flatten(), window_recon.flatten()
+    mean_x, mean_y = np.mean(orig_data), np.mean(recon_data)
+    var_x, var_y = np.var(recon_data), np.var(orig_data)
+    covar = np.cov(orig_data, recon_data)[0][1]
+    c_1, c_2 = (L*k_2)**2, (L*k_1)**2
+    num = (2*mean_x*mean_y+c_1)*(2*covar+c_2)
+    den = (mean_x**2+mean_y**2+c_1)*(var_x+var_y+c_2)
+    return num/den
+
+def calculate_ssim_image(image_orig, image_recon):
+    '''
+    returns ssim map for entire image.
+    '''
+    ssim_res = []
+    filter_dim = 11; image_dim = image_orig.shape[0];
+    number_windows = image_dim - filter_dim + 1
+    for i in range(number_windows):
+        for j in range(number_windows):
+            orig_window = image_orig[i:i+11, j:j+11]
+            recon_window = image_recon[i:i+11, j:j+11]
+            temp = calculate_ssim_patch(orig_window, recon_window)
+            ssim_res.append(temp)
+    return np.asarray(ssim_res)
