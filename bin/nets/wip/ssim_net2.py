@@ -201,6 +201,7 @@ def main():
                   +'current train error: {:.4f} -- '.format(100*train_loss/variance)
                   +'average epoch time: {:.4}s '.format(epoch_time.mean()))
 
+            # plot the current error
             f, axarr = plt.subplots(nrows=1, ncols=1, figsize=(9,6))
             axarr.plot(np.arange(epoch_count+1), training_error, label='train')
             axarr.plot(np.arange(epoch_count+1), testing_error, label='test')
@@ -208,6 +209,7 @@ def main():
             axarr.set_ylim(0,100)
             plt.savefig('ssim_net.png')
 
+            # save the weights
             for mat in weights:
                 temp = np.asarray(sess.run(weights[mat]))
                 temp_flat = temp.flatten()
@@ -216,6 +218,30 @@ def main():
                 temp = np.asarray(sess.run(biases[mat]))
                 temp_flat = temp.flatten()
                 np.savetxt('weights/{}.txt'.format(mat), temp_flat)
+
+            # output the prediction every 100 epochs
+            plt.figure(figsize = (16,12))
+            gs1 = gridspec.GridSpec(3, 4)
+            gs1.update(wspace=0, hspace=0.03)
+            if epoch_count % 100 == 0:
+                for i in range(3):
+                    ax1, ax2, ax3, ax4 = plt.subplot(gs1[4*i]), plt.subplot(gs1[4*i+1]), plt.subplot(gs1[4*i+2]), plt.subplot(gs1[4*i+3])
+                    for ax in [ax1, ax2, ax3, ax4]:
+                        ax.set_xticklabels([])
+                        ax.set_yticklabels([])
+                        ax.get_xaxis().set_visible(False)
+                        ax.get_yaxis().set_visible(False)
+                    if i == 0:
+                        ax1.set_title('original', size=20)
+                        ax2.set_title('reconstructed', size=20)
+                        ax3.set_title('ssim', size=20)
+                        ax4.set_title('ssim net prediction', size=20)
+
+                    ax1.imshow(train_features[i,:,:,0], cmap='gray')
+                    ax2.imshow(train_features[i,:,:,1], cmap='gray')
+                    ax3.imshow(train_target[i,:,:,0], cmap='plasma')
+                    ax4.imshow(prediction[i,:,:,0], cmap='plasma')
+                    plt.savefig('predictions/prediction_demo{}.png'.format(epoch_count))
 
     print('training finished.')
 
