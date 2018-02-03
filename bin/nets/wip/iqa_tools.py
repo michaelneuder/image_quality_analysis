@@ -210,4 +210,33 @@ def calculate_msssim_image(orig, recon):
     contrast3, structure3 = calculate_contrast_image(orig_ds2, recon_ds2), calculate_structure_image(orig_ds2, recon_ds2)
     luminance = calculate_luminance_image(orig_ds2, recon_ds2)
     return contrast1*contrast2*contrast3*structure1*structure2*structure3*luminance
-    
+
+def load_data(local = False, path = ''):
+    '''
+    input: boolean for if the files are local. if they are local then data path must be specified
+    returns: tuple with training original, training recon, testing orig, testing recon
+    '''
+    if local and (path == ''):
+        raise ValueError('please specify a data path if ')
+    if local:
+        data_path = path
+    else:
+        data_path = 'https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/'
+    raw_image_dim, filter_dim = 96, 11
+    train_size, test_size = 500, 140
+
+    # train data --- 500 images, 96x96 pixels
+    orig_500_raw = pd.read_csv('{}orig_500.txt'.format(data_path), header=None, delim_whitespace = True)
+    recon_500_raw = pd.read_csv('{}recon_500.txt'.format(data_path), header=None, delim_whitespace = True)
+
+    # test data --- 140 images, 96x96 pixels
+    orig_140_raw = pd.read_csv('{}orig_140.txt'.format(data_path), header=None, delim_whitespace = True)
+    recon_140_raw = pd.read_csv('{}recon_140.txt'.format(data_path), header=None, delim_whitespace = True)
+
+    # reshape
+    orig_500 = np.reshape(orig_500_raw.values, (train_size, raw_image_dim, raw_image_dim))
+    recon_500 = np.reshape(recon_500_raw.values, (train_size, raw_image_dim, raw_image_dim))
+    orig_140 = np.reshape(orig_140_raw.values, (test_size, raw_image_dim, raw_image_dim))
+    recon_140 = np.reshape(recon_140_raw.values, (test_size, raw_image_dim, raw_image_dim))
+
+    return orig_500, recon_500, orig_140, recon_140
