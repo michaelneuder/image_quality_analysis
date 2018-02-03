@@ -3,6 +3,7 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 import tensorflow as tf
 import matplotlib as mpl
+import matplotlib.gridspec as gridspec
 import pandas as pd
 import numpy as np
 mpl.use('Agg')
@@ -220,6 +221,8 @@ def main():
                 np.savetxt('weights/{}.txt'.format(mat), temp_flat)
 
             # output the prediction every 100 epochs
+            test_im = np.reshape(train_features[:3,:,:,:], (3,96,96,4))
+            prediction_ex = sess.run(conv_net(tf.cast(test_im, 'float32'), weights, biases))
             plt.figure(figsize = (16,12))
             gs1 = gridspec.GridSpec(3, 4)
             gs1.update(wspace=0, hspace=0.03)
@@ -240,7 +243,7 @@ def main():
                     ax1.imshow(train_features[i,:,:,0], cmap='gray')
                     ax2.imshow(train_features[i,:,:,1], cmap='gray')
                     ax3.imshow(train_target[i,:,:,0], cmap='plasma')
-                    ax4.imshow(prediction[i,:,:,0], cmap='plasma')
+                    ax4.imshow(prediction_ex[i,:,:,0], cmap='plasma')
                     plt.savefig('predictions/prediction_demo{}.png'.format(epoch_count))
 
     print('training finished.')
