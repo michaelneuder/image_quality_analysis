@@ -33,7 +33,10 @@ def conv_net(x, W, b):
     conv2 = convolve_inner_layers(conv1, W['weights2'], b['bias2'])
     conv3 = convolve_inner_layers(conv2, W['weights3'], b['bias3'])
     output_feed = tf.concat([conv1, conv2, conv3],3)
+    print(conv1,conv2,conv3)
+    print(output_feed)
     output = convolve_ouput_layer(output_feed, W['weights_out'], b['bias_out'])
+    print(output)
     return output
 
 def get_variance(training_target):
@@ -85,9 +88,9 @@ def main():
 
     # parameters
     filter_dim, filter_dim2 = 11, 1
-    batch_size = 1
+    batch_size = 4
     image_dim, result_dim = 96, 86
-    input_layer, first_layer, second_layer, third_layer, output_layer = 4, 200, 100, 50, 1
+    input_layer, first_layer, second_layer, third_layer, output_layer = 4, 100, 50, 25, 1
     learning_rate = .001
     epochs = 2500
 
@@ -103,8 +106,8 @@ def main():
     recon_140 = pd.read_csv('{}recon_140.txt'.format(data_path), header=None, delim_whitespace = True)
 
     # train target --- 500 images, 86x86 pixels (dimension reduction due no zero padding being used)
-    ssim_500 = pd.read_csv('{}ssim_500_new.csv'.format(data_path), header=None)
-    ssim_140 = pd.read_csv('{}ssim_140_new.csv'.format(data_path), header=None)
+    ssim_500 = pd.read_csv('{}ssim_500_nogauss.csv'.format(data_path), header=None)
+    ssim_140 = pd.read_csv('{}ssim_140_nogauss.csv'.format(data_path), header=None)
 
     print('images loaded...')
 
@@ -143,8 +146,8 @@ def main():
     test_target = np.reshape(testing_target, [test_size, result_dim, result_dim, output_layer])
 
     # initializing filters, this is what we are trying to learn --- fan in
-    scaling_factor = 1.0
-    initializer = tf.contrib.layers.variance_scaling_initializer(factor=scaling_factor, mode='FAN_IN')
+    scaling_factor = 0.1
+    initializer = tf.contrib.layers.xavier_initializer()
     weights = {
         'weights1': tf.get_variable('weights1', [filter_dim,filter_dim,input_layer,first_layer], initializer=initializer),
         'weights2': tf.get_variable('weights2', [filter_dim2,filter_dim2,first_layer,second_layer], initializer=initializer),
@@ -203,16 +206,9 @@ def main():
             axarr.plot(np.arange(epoch_count+1), testing_error, label='test')
             axarr.legend()
             axarr.set_ylim(0,100)
-            plt.savefig('errors_one_batch.png')
+            plt.savefig('relu_152_x.png')
 
     print('training finished.')
-
-    f, axarr = plt.subplots(nrows=1, ncols=1, figsize=(9,6))
-    axarr.plot(np.arange(len(training_error)), training_error, label='train')
-    axarr.plot(np.arange(len(testing_error)), testing_error, label='test')
-    axarr.legend()
-    axarr.set_ylim(0,100)
-    plt.savefig('test_2.png')
 
 if __name__ == '__main__':
     main()
