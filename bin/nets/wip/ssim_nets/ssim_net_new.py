@@ -93,7 +93,7 @@ def main():
             plt.savefig('ssim_net2.png')
 
             if epoch_count % 100 == 0:
-                saver.save(sess, 'ssimNET{}'.format(epoch_count))
+                saver.save(sess, 'saved_nets/ssimNET{}'.format(epoch_count))
 
     print('training finished.')
 
