@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import time
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 
 def get_variance(training_target):
     '''
@@ -217,26 +218,84 @@ def load_data(local = False, path = ''):
     returns: tuple with training original, training recon, testing orig, testing recon
     '''
     if local and (path == ''):
-        raise ValueError('please specify a data path if ')
+        raise ValueError('please specify a data path')
     if local:
         data_path = path
     else:
         data_path = 'https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/'
-    raw_image_dim, filter_dim = 96, 11
-    train_size, test_size = 500, 140
+    image_dim, result_dim = 96, 86
+    input_layer, output_layer = 4, 1
+    input_layer, first_layer, second_layer, third_layer, fourth_layer, output_layer = 4, 100, 50, 25, 10, 1
+    filter_dim, filter_dim2 = 11, 1
 
     # train data --- 500 images, 96x96 pixels
-    orig_500_raw = pd.read_csv('{}orig_500.txt'.format(data_path), header=None, delim_whitespace = True)
-    recon_500_raw = pd.read_csv('{}recon_500.txt'.format(data_path), header=None, delim_whitespace = True)
+    orig_500 = pd.read_csv('{}orig_500.txt'.format(data_path), header=None, delim_whitespace = True)
+    recon_500 = pd.read_csv('{}recon_500.txt'.format(data_path), header=None, delim_whitespace = True)
 
     # test data --- 140 images, 96x96 pixels
-    orig_140_raw = pd.read_csv('{}orig_140.txt'.format(data_path), header=None, delim_whitespace = True)
-    recon_140_raw = pd.read_csv('{}recon_140.txt'.format(data_path), header=None, delim_whitespace = True)
+    orig_140 = pd.read_csv('{}orig_140.txt'.format(data_path), header=None, delim_whitespace = True)
+    recon_140 = pd.read_csv('{}recon_140.txt'.format(data_path), header=None, delim_whitespace = True)
 
-    # reshape
-    orig_500 = np.reshape(orig_500_raw.values, (train_size, raw_image_dim, raw_image_dim))
-    recon_500 = np.reshape(recon_500_raw.values, (train_size, raw_image_dim, raw_image_dim))
-    orig_140 = np.reshape(orig_140_raw.values, (test_size, raw_image_dim, raw_image_dim))
-    recon_140 = np.reshape(recon_140_raw.values, (test_size, raw_image_dim, raw_image_dim))
+    # targets
+    ssim_500 = pd.read_csv('{}ssim_500_nogauss.csv'.format(data_path), header=None)
+    ssim_140 = pd.read_csv('{}ssim_140_nogauss.csv'.format(data_path), header=None)
 
-    return orig_500, recon_500, orig_140, recon_140
+    # getting 4 input channels for train and test --- (orig, recon, orig squared, recon squared)
+    original_images_train = orig_500.values
+    original_images_train_sq = orig_500.values**2
+    reconstructed_images_train = recon_500.values
+    reconstructed_images_train_sq = recon_500.values**2
+
+    original_images_test = orig_140.values
+    original_images_test_sq = orig_140.values**2
+    reconstructed_images_test = recon_140.values
+    reconstructed_images_test_sq = recon_140.values**2
+
+    # stack inputs
+    training_input = np.dstack((original_images_train, reconstructed_images_train, original_images_train_sq, reconstructed_images_train_sq))
+    testing_input = np.dstack((original_images_test, reconstructed_images_test, original_images_test_sq, reconstructed_images_test_sq))
+
+    # normalize inputs
+    training_input_normalized, testing_input_normalized = normalize_input(training_input, testing_input)
+
+    # target values
+    training_target = ssim_500.values
+    testing_target = ssim_140.values
+
+    # get size of training and testing set
+    train_size = original_images_train.shape[0]
+    test_size = original_images_test.shape[0]
+
+    # reshaping features to (num images, 96x96, 4 channels)
+    train_features = np.reshape(training_input_normalized, [train_size,image_dim,image_dim,input_layer])
+    test_features =  np.reshape(testing_input_normalized, [test_size,image_dim,image_dim,input_layer])
+
+    # reshaping target to --- (num images, 86x86, 1)
+    train_target = np.reshape(training_target, [train_size, result_dim, result_dim, output_layer])
+    test_target = np.reshape(testing_target, [test_size, result_dim, result_dim, output_layer])
+
+    return train_features, train_target, test_features, test_target
+
+def plot_sample(train_features, train_target):
+    plt.figure(figsize = (12,12))
+    gs1 = gridspec.GridSpec(3, 3)
+    gs1.update(wspace=0, hspace=0.03)
+
+    for i in range(3):
+        x = np.random.randint(500)
+        ax1, ax2, ax3 = plt.subplot(gs1[3*i]), plt.subplot(gs1[3*i+1]), plt.subplot(gs1[3*i+2])
+        for ax in [ax1, ax2, ax3]:
+            ax.set_xticklabels([])
+            ax.set_yticklabels([])
+            ax.get_xaxis().set_visible(False)
+            ax.get_yaxis().set_visible(False)
+        if i == 0:
+            ax1.set_title('original', size=20)
+            ax2.set_title('reconstructed', size=20)
+            ax3.set_title('ssim', size=20)
+
+        ax1.imshow(train_features[x,:,:,0], cmap='gray')
+        ax2.imshow(train_features[x,:,:,1], cmap='gray')
+        ax3.imshow(train_target[x,:,:,0], cmap='plasma')
+    plt.show()
+    return
