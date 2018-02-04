@@ -8,14 +8,6 @@ import time
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
-def get_variance(training_target):
-    '''
-    input: entire training set.
-    returns: the varince.
-    '''
-    all_pixels = training_target.flatten()
-    return all_pixels.var()
-
 def normalize_input(train_data, test_data):
     '''
     input: two image sets (1 training, 1 test)
@@ -299,3 +291,31 @@ def plot_sample(train_features, train_target):
         ax3.imshow(train_target[x,:,:,0], cmap='plasma')
     plt.show()
     return
+
+def convolve_inner_layers(x, W, b):
+    '''
+    inner layers of network --- tanh activation
+    '''
+    y = tf.nn.conv2d(x, W, strides = [1,1,1,1], padding='VALID')
+    y = tf.nn.bias_add(y, b)
+    return tf.nn.relu(y)
+
+def convolve_ouput_layer(x, W, b):
+    '''
+    output layer of network --- linear activation
+    '''
+    y = tf.nn.conv2d(x, W, strides = [1,1,1,1], padding='VALID')
+    y = tf.nn.bias_add(y, b)
+    return y
+
+def conv_net(x, W, b):
+    '''
+    entire conv net. each layer feed to following layer as well as output layer
+    '''
+    conv1 = convolve_inner_layers(x, W['weights1'], b['bias1'])
+    conv2 = convolve_inner_layers(conv1, W['weights2'], b['bias2'])
+    conv3 = convolve_inner_layers(conv2, W['weights3'], b['bias3'])
+    conv4 = convolve_inner_layers(conv3, W['weights4'], b['bias4'])
+    output_feed = tf.concat([conv1, conv2, conv3, conv4],3)
+    output = convolve_ouput_layer(output_feed, W['weights_out'], b['bias_out'])
+    return output
