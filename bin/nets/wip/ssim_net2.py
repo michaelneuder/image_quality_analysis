@@ -169,6 +169,8 @@ def main():
 
     # model
     prediction = conv_net(x, weights, biases)
+    print(prediction)
+    print(x)
 
     # get variance to normalize error terms during training
     variance = get_variance(train_target)
