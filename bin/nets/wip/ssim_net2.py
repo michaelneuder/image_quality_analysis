@@ -94,7 +94,8 @@ def main():
     epochs = 5000
 
     # data input
-    data_path = 'https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/'
+    # data_path = 'https://raw.githubusercontent.com/michaelneuder/image_quality_analysis/master/data/sample_data/'
+    data_path = '/home/neuder/Dropbox/github/image_quality_analysis/data/sample_data/'
 
     # train data --- 500 images, 96x96 pixels
     orig_500 = pd.read_csv('{}orig_500.txt'.format(data_path), header=None, delim_whitespace = True)
@@ -181,6 +182,8 @@ def main():
     training_error, testing_error = [], []
     epoch_time = np.asarray([])
 
+    saver = tf.train.Saver()
+
     # tensorflow session & training
     with tf.Session() as sess:
         sess.run(init)
@@ -208,43 +211,10 @@ def main():
             axarr.plot(np.arange(epoch_count+1), testing_error, label='test')
             axarr.legend()
             axarr.set_ylim(0,100)
-            plt.savefig('ssim_net.png')
+            plt.savefig('ssim_net1.png')
 
-            # save the weights
-            for mat in weights:
-                temp = np.asarray(sess.run(weights[mat]))
-                temp_flat = temp.flatten()
-                np.savetxt('weights/{}.txt'.format(mat), temp_flat)
-            for mat in biases:
-                temp = np.asarray(sess.run(biases[mat]))
-                temp_flat = temp.flatten()
-                np.savetxt('weights/{}.txt'.format(mat), temp_flat)
-
-            # output the prediction every 100 epochs
-            test_im = np.reshape(train_features[:3,:,:,:], (3,96,96,4))
-            prediction_ex = sess.run(conv_net(tf.cast(test_im, 'float32'), weights, biases))
-            plt.figure(figsize = (16,12))
-            gs1 = gridspec.GridSpec(3, 4)
-            gs1.update(wspace=0, hspace=0.03)
             if epoch_count % 100 == 0:
-                for i in range(3):
-                    ax1, ax2, ax3, ax4 = plt.subplot(gs1[4*i]), plt.subplot(gs1[4*i+1]), plt.subplot(gs1[4*i+2]), plt.subplot(gs1[4*i+3])
-                    for ax in [ax1, ax2, ax3, ax4]:
-                        ax.set_xticklabels([])
-                        ax.set_yticklabels([])
-                        ax.get_xaxis().set_visible(False)
-                        ax.get_yaxis().set_visible(False)
-                    if i == 0:
-                        ax1.set_title('original', size=20)
-                        ax2.set_title('reconstructed', size=20)
-                        ax3.set_title('ssim', size=20)
-                        ax4.set_title('ssim net prediction', size=20)
-
-                    ax1.imshow(train_features[i,:,:,0], cmap='gray')
-                    ax2.imshow(train_features[i,:,:,1], cmap='gray')
-                    ax3.imshow(train_target[i,:,:,0], cmap='plasma')
-                    ax4.imshow(prediction_ex[i,:,:,0], cmap='plasma')
-                    plt.savefig('predictions/prediction_demo{}.png'.format(epoch_count))
+                saver.save(sess, 'ssimNET{}'.format(epoch_count))
 
     print('training finished.')
 
