@@ -1,2 +1,6 @@
-model_checkpoint_path: "ssimNET0"
-all_model_checkpoint_paths: "ssimNET0"
+model_checkpoint_path: "ssimNET1700"
+all_model_checkpoint_paths: "ssimNET1300"
+all_model_checkpoint_paths: "ssimNET1400"
+all_model_checkpoint_paths: "ssimNET1500"
+all_model_checkpoint_paths: "ssimNET1600"
+all_model_checkpoint_paths: "ssimNET1700"
