@@ -1,0 +1,6 @@
+model_checkpoint_path: "ssimNET4900"
+all_model_checkpoint_paths: "ssimNET4500"
+all_model_checkpoint_paths: "ssimNET4600"
+all_model_checkpoint_paths: "ssimNET4700"
+all_model_checkpoint_paths: "ssimNET4800"
+all_model_checkpoint_paths: "ssimNET4900"
