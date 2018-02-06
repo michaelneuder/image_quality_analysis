@@ -33,6 +33,7 @@ def main():
         'weights4': tf.get_variable('weights4', [filter_dim2,filter_dim2,third_layer,fourth_layer], initializer=initializer),
         'weights_out': tf.get_variable('weights_out', [filter_dim2,filter_dim2,fourth_layer+third_layer+second_layer+first_layer,output_layer], initializer=initializer)
     }
+    print(weights['weights1'])
     biases = {
         'bias1': tf.get_variable('bias1', [first_layer], initializer=initializer),
         'bias2': tf.get_variable('bias2', [second_layer], initializer=initializer),

@@ -22,4 +22,5 @@ below are a couple pictures to peek your curiosity.
 <img src="https://github.com/michaelneuder/image_quality_analysis/blob/master/img/luminance_data_sample_red2.png"/>
 <img src="https://github.com/michaelneuder/image_quality_analysis/blob/master/img/c_s_cxs.png"/>
 <img src="https://github.com/michaelneuder/image_quality_analysis/blob/master/img/prediction.png"/>
+<img src="https://github.com/michaelneuder/image_quality_analysis/blob/master/img/trained_filterss.png"/>
 </p>
